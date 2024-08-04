@@ -25,7 +25,7 @@ export default async function LocaleLayout({
 }) {
     return (
         <html lang={locale}>
-        <body>
+        <body className="bg-gray-100">
         {children}
         <Script
             src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}

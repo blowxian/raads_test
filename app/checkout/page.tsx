@@ -31,7 +31,7 @@ const CheckoutPage: React.FC = () => {
             <div className="redirecting">
                 Redirecting&nbsp;<span>.</span><span>.</span><span>.</span>
             </div>
-            <form ref={formRef} action="/raads_report/api/checkout/session" method="POST" style={{display: 'none'}}>
+            <form ref={formRef} action="/api/checkout/session" method="POST" style={{display: 'none'}}>
                 <input type="hidden" ref={scoreRef} name="score"/>
                 <input type="hidden" ref={planRef} name="plan"/>
                 <button type="submit" role="link">Checkout</button>

@@ -40,8 +40,8 @@ export async function POST(req: NextRequest) {
             ],
             mode: 'subscription',
             // mode: 'payment',
-            success_url: `${req.headers.get('origin')}/raads_report?score=${score}&status=success&session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${req.headers.get('origin')}/raads_report?score=${score}&status=cancel`,
+            success_url: `${req.headers.get('origin')}?score=${score}&status=success&session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${req.headers.get('origin')}?score=${score}&status=cancel`,
             automatic_tax: {enabled: true},
             metadata: {
                 score: score,  // 将 userId 添加到 metadata 中

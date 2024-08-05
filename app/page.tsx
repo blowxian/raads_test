@@ -313,7 +313,7 @@ export default function RAADSRReport() {
 
     const handlePayment = (tier) => {
         // Implement actual payment logic here
-        window.location.href = `/raads_report/checkout?score=${totalScore}&package=${tier}`;
+        window.location.href = `/checkout?score=${totalScore}&package=${tier}`;
     };
 
     const EbookPreview = () => (
@@ -390,7 +390,7 @@ export default function RAADSRReport() {
             // verify payment status
             const sessionId = searchParams?.get('session_id');
             if (sessionId) {
-                fetch(`/raads_report/api/checkout/verify?session_id=${sessionId}`)
+                fetch(`/api/checkout/verify?session_id=${sessionId}`)
                     .then(res => res.json())
                     .then(data => {
                         console.log(data);
@@ -464,10 +464,10 @@ export default function RAADSRReport() {
                 <div className="w-full flex flex-wrap md:justify-end button-container">
                     <button onClick={handlePrint}
                             className={`mb-4 px-4 py-2 rounded ml-4 flex items-center ${
-                                isPaid ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-300 cursor-not-allowed'
-                            }`} disabled={!isPaid}>
+                                isPaid && (selectedTier === 'premium' || selectedTier === 'service') ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-300 cursor-not-allowed'
+                            }`} disabled={!(isPaid && (selectedTier === 'premium' || selectedTier === 'service'))}>
 
-                        {isPaid ? (
+                        {isPaid && (selectedTier === 'premium' || selectedTier === 'service') ? (
                             <Download className="mr-2 text-white"/>
                         ) : (
                             <XCircle className="mr-2 text-gray-300"/>
@@ -570,12 +570,15 @@ export default function RAADSRReport() {
                     </>
                 )}
 
+
+                {selectedTier && (
                 <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-4xl mt-4" id="EBook">
                     <h1 className="text-2xl font-bold mb-4">E-Book</h1>
                     <div className={!isPaid ? 'blur-md' : ''}>
                         <EbookDownload/>
                     </div>
                 </div>
+                )}
 
                 {(selectedTier === 'premium' || selectedTier === 'service') && (
                     <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-4xl mt-4" id="AI_Assistant">

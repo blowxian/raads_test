@@ -13,3 +13,18 @@
         margin-left: 0;
     }
 }
+
+.flash-border {
+    animation: flash 0.3s infinite alternate;
+}
+
+@keyframes flash {
+    from {
+        border-color: #e5e7eb; /* 默认颜色 */
+        border-width: 2px;
+    }
+    to {
+        border-color: #ffa500; /* 柔和的橙色 */
+        border-width: 2px;
+    }
+}

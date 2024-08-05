@@ -6,15 +6,18 @@ import {useReactToPrint} from 'react-to-print';
 import {
     AlertTriangle,
     Book,
-    BookOpen,
     Briefcase,
     Calendar,
+    Check,
     CheckCircle,
+    ChevronDown,
+    ChevronUp,
     Download,
     GraduationCap,
     Heart,
     HeartPulse,
     Home,
+    Lock,
     Monitor,
     Stethoscope,
     Users
@@ -234,14 +237,135 @@ const getInterpretationDetails = (score: number) => {
     return "A score of 240 is the maximum score attainable on the RAADS-R scale, indicating the presence of all measured characteristics associated with autism to the highest degree.";
 };
 
+const pricingTiers = [
+    {
+        name: "Basic",
+        originalPrice: 14.99,
+        price: 9.99,
+        features: ["Full RAADS-R Report"],
+    },
+    {
+        name: "Standard",
+        originalPrice: 29.99,
+        price: 19.99,
+        features: ["Full RAADS-R Report", "3 eBooks"],
+    },
+    {
+        name: "Premium",
+        originalPrice: 59.99,
+        price: 39.99,
+        features: ["Full RAADS-R Report", "3 eBooks", "1 Year AI Assistant Access"],
+    },
+];
+
+const ebooks = [
+    {
+        title: "Unmasking Autism",
+        cover: "/raads_report/ebook/unmasking_autism.jpg",
+        description: `
+        A deep dive into the spectrum of Autistic experience and the phenomenon of masked Autism, giving individuals the tools to safely uncover their true selves while broadening society’s narrow understanding of neurodiversity.
+
+        <em>“A remarkable work that will stand at the forefront of the neurodiversity movement.”—Barry M. Prizant, PhD, CCC-SLP, author of Uniquely Human: A Different Way of Seeing Autism</em>
+        `,
+        link: "#"
+    },
+    {
+        title: "I Think I Might Be Autistic",
+        cover: "/raads_report/ebook/i_think_i_might_be_autistic.jpg",
+        description: `
+        This New York Times–bestselling book upends conventional thinking about autism and suggests a broader model for acceptance, understanding, and full participation in society for people who think differently.
+
+        <em>“Beautifully told, humanizing, important.”—The New York Times Book Review</em>
+        <em>“Breathtaking.”—The Boston Globe</em>
+        <em>“Epic and often shocking.”—Chicago Tribune</em>
+
+        WINNER OF THE SAMUEL JOHNSON PRIZE FOR NONFICTION AND THE CALIFORNIA BOOK AWARD
+        `,
+        link: "#"
+    },
+    {
+        title: "Neuro Tribe",
+        cover: "/raads_report/ebook/neuro_tribes.jpg",
+        description: `
+        In her forties, the author was diagnosed with Asperger's syndrome. She addresses aspects of living with ASD as a late-diagnosed adult, including coping with the emotional effect of discovering oneself to be autistic and deciding with whom to share the diagnosis and how.
+        `,
+        link: "#"
+    },
+];
+
 export default function RAADSRReport() {
     const searchParams = useSearchParams();
     const [totalScore, setTotalScore] = useState(0);
+    const [isPaid, setIsPaid] = useState(false);
+    const [selectedTier, setSelectedTier] = useState(null);
+    const [showEbooks, setShowEbooks] = useState(true);
+    const [paymentCancelled, setPaymentCancelled] = useState(false);
+    const [showFlash, setShowFlash] = useState(false);
     const componentRef = useRef(null);
 
     const handlePrint = useReactToPrint({
         content: () => componentRef.current,
     });
+
+    const handlePayment = (tier) => {
+        // Implement actual payment logic here
+        window.location.href = `/raads_report/checkout?score=${totalScore}&plan=${tier}`;
+    };
+
+
+    const EbookPreview = () => (
+        <div className="mt-4 w-full">
+            <button
+                onClick={() => setShowEbooks(!showEbooks)}
+                className="flex items-center justify-between w-full p-2 bg-gray-100 rounded"
+            >
+                <span className="font-bold">Included eBooks (Standard & Premium Plans)</span>
+                {showEbooks ? <ChevronUp className="h-5 w-5"/> : <ChevronDown className="h-5 w-5"/>}
+            </button>
+            {showEbooks && (
+                <div className="grid grid-cols-1 gap-4 mt-4">
+                    {ebooks.map((book, index) => (
+                        <div key={index} className="p-2 border rounded">
+                            <img src={book.cover} alt={book.title}
+                                 className="w-20 md:w-32 object-cover float-left mr-2 border-black drop-shadow-md"/>
+                            <div>
+                                <h4 className="font-bold text-sm">{book.title}</h4>
+                                <p
+                                    className="text-xs text-gray-600"
+                                    style={{whiteSpace: 'pre-wrap'}}
+                                    dangerouslySetInnerHTML={{__html: book.description}}
+                                />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+
+
+    const EbookDownload = () => (
+        <div className="mt-4 w-full">
+            <div className="grid grid-cols-1 gap-4 mt-4">
+                {ebooks.map((book, index) => (
+                    <div key={index} className="p-2 border rounded">
+                        <img src={book.cover} alt={book.title}
+                             className="w-20 md:w-32 object-cover float-left mr-2 border-black drop-shadow-md"/>
+                        <div>
+                            <h4 className="font-bold text-sm">{book.title}</h4>
+                            <p
+                                className="text-xs text-gray-600"
+                                style={{whiteSpace: 'pre-wrap'}}
+                                dangerouslySetInnerHTML={{__html: book.description}}
+                            />
+                        </div>
+                        <a className="mb-4 bg-blue-600 text-white px-4 py-2 rounded float-right ml-2 flex items-center"
+                           href={book.link}>Download</a>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
 
     useEffect(() => {
         const scoreFromParams = searchParams.get('score');
@@ -251,32 +375,53 @@ export default function RAADSRReport() {
                 setTotalScore(parsedScore);
             }
         }
+
+        const paymentStatus = searchParams.get('status');
+        if (paymentStatus === 'success') {
+            // verify payment status
+            const sessionId = searchParams?.get('session_id');
+            if (sessionId) {
+                fetch(`/raads_report/api/checkout/verify?session_id=${sessionId}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        console.log(data);
+                        setIsPaid(true);
+                        setSelectedTier(data.metadata.plan);
+                    })
+                    .catch(error => {
+                        console.error("Failed to verify payment:", error);
+                    });
+            }
+        } else if (paymentStatus === 'cancel') {
+            console.log("Payment cancelled.");
+            setPaymentCancelled(true);
+            setShowFlash(true);
+            setTimeout(() => {
+                setPaymentCancelled(false);
+            }, 3000); // 3秒后隐藏通知栏
+            setTimeout(() => {
+                setShowFlash(false);
+            }, 6000); // 6秒后停止边框闪烁
+        }
     }, [searchParams]);
 
     return (
         <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
             <div>
-                <div className="w-full flex flex-wrap justify-end md:justify-start button-container">
-                    <button className="mb-4 bg-blue-600 text-white px-4 py-2 rounded ml-4 flex items-center">
-                        <Calendar className="mr-2"/>
-                        One Year Access of Continuous AI Assistant
-                    </button>
-                    <button className="mb-4 bg-blue-600 text-white px-4 py-2 rounded ml-4 flex items-center">
-                        <BookOpen className="mr-2"/>
-                        $100 Value E-Book
-                    </button>
+                <div className="w-full flex flex-wrap md:justify-end button-container">
                     <button onClick={handlePrint}
                             className="mb-4 bg-blue-600 text-white px-4 py-2 rounded ml-4 flex items-center">
                         <Download className="mr-2"/>
                         Download Report
                     </button>
                 </div>
+
                 <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-4xl" ref={componentRef}>
                     <h1 className="text-2xl font-bold mb-4">RAADS-R Evaluation Report</h1>
                     <p className="text-sm text-gray-600 mb-4">Evaluation Date: {new Date().toLocaleDateString()}</p>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                        <div className="col-span-2">
+                        <div className={`col-span-2 ${!isPaid ? 'blur-md' : ''}`}>
                             <h2 className="text-xl font-bold mb-2">Analysis and Interpretation</h2>
                             <p className="mb-2">{getInterpretationDetails(totalScore)}</p>
                         </div>
@@ -290,7 +435,7 @@ export default function RAADSRReport() {
                         </div>
                     </div>
 
-                    <div className="mb-6">
+                    <div className={`mb-6 ${!isPaid ? 'blur-md' : ''}`}>
                         <h2 className="text-xl font-bold mb-2">Recommendations</h2>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             {getRecommendations(totalScore).map((recommendation, index) => (
@@ -305,7 +450,7 @@ export default function RAADSRReport() {
                         </div>
                     </div>
 
-                    <div className="mb-6">
+                    <div className={`mb-6 ${!isPaid ? 'blur-md' : ''}`}>
                         <h2 className="text-xl font-bold mb-2">General Advice for All</h2>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             {getGeneralAdvice().map((advice, index) => (
@@ -326,6 +471,83 @@ export default function RAADSRReport() {
                             protect your privacy and ensure your personal information is not disclosed.</p>
                     </div>
                 </div>
+
+                {(selectedTier === 'Standard' || selectedTier === 'Premium') && (
+                    <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-4xl mt-4" id="EBook">
+                        <h1 className="text-2xl font-bold mb-4">E-Book</h1>
+                        <div className={!isPaid ? 'blur-md' : ''}>
+                            <EbookDownload/>
+                        </div>
+                    </div>
+                )}
+
+                {(selectedTier === 'Premium') && (
+                    <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-4xl mt-4" id="AI_Assistant">
+                        <h1 className="text-2xl font-bold mb-4">Continuous AI Assistant</h1>
+                        <div className={`flex justify-center${!isPaid ? 'blur-md' : ''}`}>
+                            <a className="mb-4 bg-blue-600 text-white px-4 py-2 rounded ml-4 flex items-center"
+                               href="#AI_Assistant">
+                                <Calendar className="mr-2"/>
+                                One Year Access
+                            </a>
+                        </div>
+                    </div>
+                )}
+
+                {/* Payment overlay */}
+                {!selectedTier && (
+                    <div
+                        className="fixed inset-0 bg-white bg-opacity-90 flex items-center justify-center overflow-auto">
+                        <div
+                            className="text-center p-4 sm:p-8 w-full max-w-4xl h-full">
+                            <Lock className="h-12 w-12 mx-auto mb-4 text-blue-600"/>
+                            <h2 className="text-2xl font-bold mb-4">Unlock Your RAADS-R Report</h2>
+                            <p className="mb-6">Choose a plan to access your complete RAADS-R evaluation report and
+                                additional resources.</p>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+                                {pricingTiers.map((tier, index) => (
+                                    <div key={index}
+                                         className={`border-2 rounded-lg p-4 flex flex-col justify-between ${showFlash ? 'flash-border' : ''}`}>
+                                        <div>
+                                            <h3 className="font-bold text-lg mb-2">{tier.name}</h3>
+                                            <div className="mb-4">
+                                                <span className="text-2xl font-bold text-green-600">${tier.price}</span>
+                                                <span
+                                                    className="text-sm text-gray-500 line-through ml-2">${tier.originalPrice}</span>
+                                            </div>
+                                            <ul className="text-left mb-4">
+                                                {tier.features.map((feature, fIndex) => (
+                                                    <li key={fIndex} className="flex items-center mb-2">
+                                                        <Check className="h-4 w-4 mr-2 text-green-500 flex-shrink-0"/>
+                                                        <span className="text-sm">{feature}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                        <button
+                                            onClick={() => handlePayment(tier.name)}
+                                            className="bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition duration-300 mt-auto"
+                                        >
+                                            Select
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                            <EbookPreview/>
+                        </div>
+                    </div>
+                )}
+
+                {paymentCancelled && (
+                    <div
+                        className="fixed top-0 left-0 right-0 bg-[#ffa500] text-white flex items-center justify-center">
+                        <div className="p-4 text-center">
+                            <h2 className="text-2xl font-bold mb-4">Payment Cancelled</h2>
+                            <p>Your payment was cancelled. Please choose a suitable plan to unlock your complete RAADS-R
+                                report and additional resources.</p>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

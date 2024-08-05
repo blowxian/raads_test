@@ -20,7 +20,8 @@ import {
     Lock,
     Monitor,
     Stethoscope,
-    Users
+    Users,
+    XCircle
 } from 'lucide-react';
 
 const getInterpretation = (score: number) => {
@@ -239,22 +240,25 @@ const getInterpretationDetails = (score: number) => {
 
 const pricingTiers = [
     {
-        name: "Basic",
-        originalPrice: 14.99,
-        price: 9.99,
-        features: ["Full RAADS-R Report"],
+        name: "basic",
+        title: "Basic",
+        originalPrice: 18.00,
+        price: 8,
+        features: ["1 eBook"],
     },
     {
-        name: "Standard",
-        originalPrice: 29.99,
-        price: 19.99,
-        features: ["Full RAADS-R Report", "3 eBooks"],
-    },
-    {
-        name: "Premium",
-        originalPrice: 59.99,
-        price: 39.99,
+        name: "premium",
+        title: "Premium",
+        originalPrice: 38,
+        price: 18,
         features: ["Full RAADS-R Report", "3 eBooks", "1 Year AI Assistant Access"],
+    },
+    {
+        name: "service",
+        title: "Service",
+        originalPrice: 1600,
+        price: 800,
+        features: ["Full RAADS-R Report", "3 eBooks", "1 Year AI Assistant Access", "One-Month Email Consultation Service"],
     },
 ];
 
@@ -309,9 +313,8 @@ export default function RAADSRReport() {
 
     const handlePayment = (tier) => {
         // Implement actual payment logic here
-        window.location.href = `/raads_report/checkout?score=${totalScore}&plan=${tier}`;
+        window.location.href = `/raads_report/checkout?score=${totalScore}&package=${tier}`;
     };
-
 
     const EbookPreview = () => (
         <div className="mt-4 w-full">
@@ -342,7 +345,6 @@ export default function RAADSRReport() {
             )}
         </div>
     );
-
 
     const EbookDownload = () => (
         <div className="mt-4 w-full">
@@ -408,10 +410,61 @@ export default function RAADSRReport() {
     return (
         <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
             <div>
+
+                {/* Payment overlay */}
+                {!selectedTier && (
+                    <div
+                        className="flex items-center justify-center overflow-auto">
+                        <div
+                            className="text-center p-4 sm:p-8 w-full max-w-4xl h-full">
+                            <Lock className="h-12 w-12 mx-auto mb-4 text-blue-600"/>
+                            <h2 className="text-2xl font-bold mb-4">Unlock Your RAADS-R Report</h2>
+                            <p className="mb-6">Choose a plan to access your complete RAADS-R evaluation report and
+                                additional resources.</p>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+                                {pricingTiers.map((tier, index) => (
+                                    <div key={index}
+                                         className={`border-2 rounded-lg p-4 flex flex-col justify-between ${showFlash ? 'flash-border' : ''}`}>
+                                        <div>
+                                            <h3 className="font-bold text-lg mb-2">{tier.title}</h3>
+                                            <div className="mb-4">
+                                                <span className="text-2xl font-bold text-green-600">${tier.price}</span>
+                                                <span
+                                                    className="text-sm text-gray-500 line-through ml-2">${tier.originalPrice}</span>
+                                            </div>
+                                            <ul className="text-left mb-4">
+                                                {tier.features.map((feature, fIndex) => (
+                                                    <li key={fIndex} className="flex items-center mb-2">
+                                                        <Check className="h-4 w-4 mr-2 text-green-500 flex-shrink-0"/>
+                                                        <span className="text-sm">{feature}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                        <button
+                                            onClick={() => handlePayment(tier.name)}
+                                            className="bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition duration-300 mt-auto"
+                                        >
+                                            Select
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 <div className="w-full flex flex-wrap md:justify-end button-container">
                     <button onClick={handlePrint}
-                            className="mb-4 bg-blue-600 text-white px-4 py-2 rounded ml-4 flex items-center">
-                        <Download className="mr-2"/>
+                            className={`mb-4 px-4 py-2 rounded ml-4 flex items-center ${
+                                isPaid ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-300 cursor-not-allowed'
+                            }`} disabled={!isPaid}>
+
+                        {isPaid ? (
+                            <Download className="mr-2 text-white"/>
+                        ) : (
+                            <XCircle className="mr-2 text-gray-300"/>
+                        )}
                         Download Report
                     </button>
                 </div>
@@ -472,70 +525,35 @@ export default function RAADSRReport() {
                     </div>
                 </div>
 
-                {(selectedTier === 'Standard' || selectedTier === 'Premium') && (
-                    <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-4xl mt-4" id="EBook">
-                        <h1 className="text-2xl font-bold mb-4">E-Book</h1>
-                        <div className={!isPaid ? 'blur-md' : ''}>
-                            <EbookDownload/>
-                        </div>
-                    </div>
-                )}
-
-                {(selectedTier === 'Premium') && (
-                    <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-4xl mt-4" id="AI_Assistant">
-                        <h1 className="text-2xl font-bold mb-4">Continuous AI Assistant</h1>
-                        <div className={`flex justify-center${!isPaid ? 'blur-md' : ''}`}>
-                            <a className="mb-4 bg-blue-600 text-white px-4 py-2 rounded ml-4 flex items-center"
-                               href="#AI_Assistant">
-                                <Calendar className="mr-2"/>
-                                One Year Access
-                            </a>
-                        </div>
-                    </div>
-                )}
-
-                {/* Payment overlay */}
                 {!selectedTier && (
                     <div
-                        className="fixed inset-0 bg-white bg-opacity-90 flex items-center justify-center overflow-auto">
+                        className="flex items-center justify-center overflow-auto">
                         <div
                             className="text-center p-4 sm:p-8 w-full max-w-4xl h-full">
-                            <Lock className="h-12 w-12 mx-auto mb-4 text-blue-600"/>
-                            <h2 className="text-2xl font-bold mb-4">Unlock Your RAADS-R Report</h2>
-                            <p className="mb-6">Choose a plan to access your complete RAADS-R evaluation report and
-                                additional resources.</p>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-                                {pricingTiers.map((tier, index) => (
-                                    <div key={index}
-                                         className={`border-2 rounded-lg p-4 flex flex-col justify-between ${showFlash ? 'flash-border' : ''}`}>
-                                        <div>
-                                            <h3 className="font-bold text-lg mb-2">{tier.name}</h3>
-                                            <div className="mb-4">
-                                                <span className="text-2xl font-bold text-green-600">${tier.price}</span>
-                                                <span
-                                                    className="text-sm text-gray-500 line-through ml-2">${tier.originalPrice}</span>
-                                            </div>
-                                            <ul className="text-left mb-4">
-                                                {tier.features.map((feature, fIndex) => (
-                                                    <li key={fIndex} className="flex items-center mb-2">
-                                                        <Check className="h-4 w-4 mr-2 text-green-500 flex-shrink-0"/>
-                                                        <span className="text-sm">{feature}</span>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </div>
-                                        <button
-                                            onClick={() => handlePayment(tier.name)}
-                                            className="bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition duration-300 mt-auto"
-                                        >
-                                            Select
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
                             <EbookPreview/>
                         </div>
                     </div>
+                )}
+
+                {(selectedTier === 'Premium' || selectedTier === 'Service') && (
+                    <>
+                        <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-4xl mt-4" id="EBook">
+                            <h1 className="text-2xl font-bold mb-4">E-Book</h1>
+                            <div className={!isPaid ? 'blur-md' : ''}>
+                                <EbookDownload/>
+                            </div>
+                        </div>
+                        <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-4xl mt-4" id="AI_Assistant">
+                            <h1 className="text-2xl font-bold mb-4">Continuous AI Assistant</h1>
+                            <div className={`flex justify-center${!isPaid ? 'blur-md' : ''}`}>
+                                <a className="mb-4 bg-blue-600 text-white px-4 py-2 rounded ml-4 flex items-center"
+                                   href="#AI_Assistant">
+                                    <Calendar className="mr-2"/>
+                                    One Year Access
+                                </a>
+                            </div>
+                        </div>
+                    </>
                 )}
 
                 {paymentCancelled && (

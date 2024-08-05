@@ -12,7 +12,7 @@ const CheckoutPage: React.FC = () => {
         // 获取 URL 中的 score、plan 和 coupon 参数
         const queryParams = new URLSearchParams(window.location.search);
         const score = queryParams.get('score');
-        const plan = queryParams.get('plan');
+        const plan = queryParams.get('package');
 
         // 在隐藏的输入字段中设置用户 ID、plan 和优惠券
         if (scoreRef.current && planRef.current) {

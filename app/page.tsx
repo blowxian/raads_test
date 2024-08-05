@@ -559,7 +559,7 @@ export default function RAADSRReport() {
                                                 <br/>
                                                 Experience personalized emotional support and professional advice with
                                                 our AI-powered mental health assistant. Anytime, anywhere, our assistant
-                                                is here to help you navigate life's challenges, improve your mental
+                                                is here to help you navigate life&apos;s challenges, improve your mental
                                                 well-being, and enjoy a more fulfilling and balanced life.
                                             </p>
                                         </div>
@@ -593,7 +593,7 @@ export default function RAADSRReport() {
                                 <br/>
                                 Experience personalized emotional support and professional advice with
                                 our AI-powered mental health assistant. Anytime, anywhere, our assistant
-                                is here to help you navigate life's challenges, improve your mental
+                                is here to help you navigate life&apos;s challenges, improve your mental
                                 well-being, and enjoy a more fulfilling and balanced life.
                             </p>
                             <a className="mb-4 bg-blue-600 text-white px-4 py-2 rounded mr-4 mt-4 float-left flex"

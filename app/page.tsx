@@ -311,7 +311,7 @@ export default function RAADSRReport() {
         content: () => componentRef.current,
     });
 
-    const handlePayment = (tier) => {
+    const handlePayment = (tier: any) => {
         // Implement actual payment logic here
         window.location.href = `/checkout?score=${totalScore}&package=${tier}`;
     };
@@ -572,12 +572,12 @@ export default function RAADSRReport() {
 
 
                 {selectedTier && (
-                <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-4xl mt-4" id="EBook">
-                    <h1 className="text-2xl font-bold mb-4">E-Book</h1>
-                    <div className={!isPaid ? 'blur-md' : ''}>
-                        <EbookDownload/>
+                    <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-4xl mt-4" id="EBook">
+                        <h1 className="text-2xl font-bold mb-4">E-Book</h1>
+                        <div className={!isPaid ? 'blur-md' : ''}>
+                            <EbookDownload/>
+                        </div>
                     </div>
-                </div>
                 )}
 
                 {(selectedTier === 'premium' || selectedTier === 'service') && (

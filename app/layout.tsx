@@ -1,6 +1,7 @@
 import type {Metadata} from "next";
 import "@/app/globals.css";
 import Script from "next/script";
+import {Suspense} from 'react'
 
 export const metadata: Metadata = {
     title: "RAADS-R Assessment Report | Autism Evaluation Results",
@@ -23,7 +24,9 @@ export default async function LocaleLayout({
     return (
         <html lang={locale}>
         <body className="bg-gray-100">
-        {children}
+        <Suspense>
+            {children}
+        </Suspense>
         <Script
             src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
             strategy="afterInteractive"

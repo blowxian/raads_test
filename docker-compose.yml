@@ -1,8 +1,9 @@
 version: '3.8'
 
 services:
-  app:
-    image: blowxian/lison-next-tmpl:latest
+  simple_sites:
+    image: blowxian/simple_sites:latest
+    container_name: simple_sites
     ports:
       - "3000:3000"
     environment:

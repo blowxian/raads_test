@@ -449,7 +449,7 @@ export default function RAADSRReport() {
                                             </ul>
                                         </div>
                                         <button
-                                            onClick={() => handlePayment(tier.name)}
+                                            onClick={() => handlePayment(tier.name as any)}
                                             className="bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition duration-300 mt-auto"
                                         >
                                             Select

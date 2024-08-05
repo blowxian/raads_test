@@ -2,8 +2,8 @@ version: '3.8'
 
 services:
   simple_sites:
-    image: blowxian/simple_sites:latest
-    container_name: simple_sites
+    image: blowxian/raads_test:latest
+    container_name: raads_test
     ports:
       - "3000:3000"
     environment:

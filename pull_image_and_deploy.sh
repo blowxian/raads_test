@@ -11,7 +11,7 @@ fi
 
 # 拉取最新的 Docker 镜像
 echo "正在拉取最新的 Docker 镜像..."
-if docker-compose -f docker-compose.prod.yml pull simple_sites; then
+if docker-compose -f docker-compose.prod.yml pull raads_test; then
     echo "Docker 镜像拉取成功。"
 else
     echo "Docker 镜像拉取失败！"
@@ -20,7 +20,7 @@ fi
 
 # 停止 Docker 容器
 echo "正在停止 Docker 容器..."
-if docker-compose -f docker-compose.prod.yml stop simple_sites; then
+if docker-compose -f docker-compose.prod.yml stop raads_test; then
     echo "Docker 容器停止成功。"
 else
     echo "Docker 容器停止失败！"
@@ -29,7 +29,7 @@ fi
 
 # 启动 Docker 容器
 echo "正在启动 Docker 容器..."
-if docker-compose -f docker-compose.prod.yml up simple_sites -d; then
+if docker-compose -f docker-compose.prod.yml up raads_test -d; then
     echo "Docker 容器启动成功。"
 else
     echo "Docker 容器启动失败！"

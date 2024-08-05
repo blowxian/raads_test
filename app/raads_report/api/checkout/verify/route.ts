@@ -17,10 +17,9 @@ export async function GET(req: NextRequest) {
         if (session.payment_status === 'paid') {
             // 从 session metadata 获取 userId，并确保它是整数
             const metadata = session.metadata;
-
             console.log('metadata: ', metadata);
 
-            return NextResponse.json({success: true, metadata});
+            return NextResponse.json({success: true, metadata, session});
         } else {
             return NextResponse.json({success: false, message: 'Payment not completed'});
         }

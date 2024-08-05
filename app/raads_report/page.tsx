@@ -251,14 +251,14 @@ const pricingTiers = [
         title: "Premium",
         originalPrice: 38,
         price: 18,
-        features: ["Full RAADS-R Report", "3 eBooks", "1 Year AI Assistant Access"],
+        features: ["Full RAADS-R Report", "3 eBooks", "One-Year AI Assistant Access"],
     },
     {
         name: "service",
         title: "Service",
         originalPrice: 1600,
         price: 800,
-        features: ["Full RAADS-R Report", "3 eBooks", "1 Year AI Assistant Access", "One-Month Email Consultation Service"],
+        features: ["Full RAADS-R Report", "3 eBooks", "One-Year AI Assistant Access", "One-Month Email Consultation Service"],
     },
 ];
 
@@ -322,7 +322,7 @@ export default function RAADSRReport() {
                 onClick={() => setShowEbooks(!showEbooks)}
                 className="flex items-center justify-between w-full p-2 bg-gray-100 rounded"
             >
-                <span className="font-bold">Included eBooks (Standard & Premium Plans)</span>
+                <span className="font-bold">Included eBooks (Premium & Service Packages)</span>
                 {showEbooks ? <ChevronUp className="h-5 w-5"/> : <ChevronDown className="h-5 w-5"/>}
             </button>
             {showEbooks && (
@@ -349,22 +349,29 @@ export default function RAADSRReport() {
     const EbookDownload = () => (
         <div className="mt-4 w-full">
             <div className="grid grid-cols-1 gap-4 mt-4">
-                {ebooks.map((book, index) => (
-                    <div key={index} className="p-2 border rounded">
-                        <img src={book.cover} alt={book.title}
-                             className="w-20 md:w-32 object-cover float-left mr-2 border-black drop-shadow-md"/>
-                        <div>
-                            <h4 className="font-bold text-sm">{book.title}</h4>
-                            <p
-                                className="text-xs text-gray-600"
-                                style={{whiteSpace: 'pre-wrap'}}
-                                dangerouslySetInnerHTML={{__html: book.description}}
-                            />
+                {ebooks.map((book, index) => {
+                    // Check if selectedTier is 'service' and if the current book is the first one
+                    if (selectedTier === 'basic' && index > 0) {
+                        return null;
+                    }
+
+                    return (
+                        <div key={index} className="p-2 border rounded">
+                            <img src={book.cover} alt={book.title}
+                                 className="w-20 md:w-32 object-cover float-left mr-2 border-black drop-shadow-md"/>
+                            <div>
+                                <h4 className="font-bold text-sm">{book.title}</h4>
+                                <p
+                                    className="text-xs text-gray-600"
+                                    style={{whiteSpace: 'pre-wrap'}}
+                                    dangerouslySetInnerHTML={{__html: book.description}}
+                                />
+                            </div>
+                            <a className="mb-4 bg-blue-600 text-white px-4 py-2 rounded float-right ml-2 flex items-center"
+                               href={book.link}>Download</a>
                         </div>
-                        <a className="mb-4 bg-blue-600 text-white px-4 py-2 rounded float-right ml-2 flex items-center"
-                           href={book.link}>Download</a>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
         </div>
     );
@@ -419,7 +426,7 @@ export default function RAADSRReport() {
                             className="text-center p-4 sm:p-8 w-full max-w-4xl h-full">
                             <Lock className="h-12 w-12 mx-auto mb-4 text-blue-600"/>
                             <h2 className="text-2xl font-bold mb-4">Unlock Your RAADS-R Report</h2>
-                            <p className="mb-6">Choose a plan to access your complete RAADS-R evaluation report and
+                            <p className="mb-6">Choose a package to access your complete RAADS-R evaluation report and
                                 additional resources.</p>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
                                 {pricingTiers.map((tier, index) => (
@@ -474,7 +481,8 @@ export default function RAADSRReport() {
                     <p className="text-sm text-gray-600 mb-4">Evaluation Date: {new Date().toLocaleDateString()}</p>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                        <div className={`col-span-2 ${!isPaid ? 'blur-md' : ''}`}>
+                        <div
+                            className={`col-span-2 ${!isPaid || !(selectedTier === 'premium' || selectedTier === 'service') ? 'blur-md' : ''}`}>
                             <h2 className="text-xl font-bold mb-2">Analysis and Interpretation</h2>
                             <p className="mb-2">{getInterpretationDetails(totalScore)}</p>
                         </div>
@@ -488,7 +496,8 @@ export default function RAADSRReport() {
                         </div>
                     </div>
 
-                    <div className={`mb-6 ${!isPaid ? 'blur-md' : ''}`}>
+                    <div
+                        className={`mb-6 ${!isPaid || !(selectedTier === 'premium' || selectedTier === 'service') ? 'blur-md' : ''}`}>
                         <h2 className="text-xl font-bold mb-2">Recommendations</h2>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             {getRecommendations(totalScore).map((recommendation, index) => (
@@ -503,7 +512,8 @@ export default function RAADSRReport() {
                         </div>
                     </div>
 
-                    <div className={`mb-6 ${!isPaid ? 'blur-md' : ''}`}>
+                    <div
+                        className={`mb-6 ${!isPaid || !(selectedTier === 'premium' || selectedTier === 'service') ? 'blur-md' : ''}`}>
                         <h2 className="text-xl font-bold mb-2">General Advice for All</h2>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             {getGeneralAdvice().map((advice, index) => (
@@ -526,34 +536,72 @@ export default function RAADSRReport() {
                 </div>
 
                 {!selectedTier && (
-                    <div
-                        className="flex items-center justify-center overflow-auto">
-                        <div
-                            className="text-center p-4 sm:p-8 w-full max-w-4xl h-full">
-                            <EbookPreview/>
-                        </div>
-                    </div>
-                )}
-
-                {(selectedTier === 'Premium' || selectedTier === 'Service') && (
                     <>
-                        <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-4xl mt-4" id="EBook">
-                            <h1 className="text-2xl font-bold mb-4">E-Book</h1>
-                            <div className={!isPaid ? 'blur-md' : ''}>
-                                <EbookDownload/>
+                        <div className="flex items-center justify-center overflow-auto">
+                            <div
+                                className="text-center p-4 sm:p-8 w-full max-w-4xl h-full">
+                                <EbookPreview/>
                             </div>
                         </div>
-                        <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-4xl mt-4" id="AI_Assistant">
-                            <h1 className="text-2xl font-bold mb-4">Continuous AI Assistant</h1>
-                            <div className={`flex justify-center${!isPaid ? 'blur-md' : ''}`}>
-                                <a className="mb-4 bg-blue-600 text-white px-4 py-2 rounded ml-4 flex items-center"
-                                   href="#AI_Assistant">
-                                    <Calendar className="mr-2"/>
-                                    One Year Access
-                                </a>
+                        <div className="flex items-center justify-center overflow-auto">
+                            <div className="text-center p-4 sm:p-8 w-full max-w-4xl h-full">
+                                <div className="mt-4 w-full">
+                                    <span
+                                        className="font-bold flex ml-2">Included AI Assistant (Premium & Service Packages)</span>
+                                    <div className="grid grid-cols-1 gap-4 mt-4">
+                                        <div className="p-2 border rounded">
+                                            <img src="/raads_report/thumbnail/ai_assistant.png" alt="AI Assistant"
+                                                 className="h-20 md:h-32 object-cover float-right ml-2 border-black drop-shadow-md"/>
+                                            <h4 className="font-bold text-sm">AI Powered Mental Health
+                                                Assistant</h4>
+                                            <p
+                                                className="text-xs text-gray-600">
+                                                <br/>
+                                                Experience personalized emotional support and professional advice with
+                                                our AI-powered mental health assistant. Anytime, anywhere, our assistant
+                                                is here to help you navigate life's challenges, improve your mental
+                                                well-being, and enjoy a more fulfilling and balanced life.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </>
+                )}
+
+                <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-4xl mt-4" id="EBook">
+                    <h1 className="text-2xl font-bold mb-4">E-Book</h1>
+                    <div className={!isPaid ? 'blur-md' : ''}>
+                        <EbookDownload/>
+                    </div>
+                </div>
+
+                {(selectedTier === 'premium' || selectedTier === 'service') && (
+                    <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-4xl mt-4" id="AI_Assistant">
+                        <h1 className="text-2xl font-bold mb-4">Continuous AI Assistant</h1>
+                        <div className={`${!isPaid ? 'blur-md' : ''}`}>
+                            <img src="/raads_report/thumbnail/ai_assistant.png" alt="AI Assistant"
+                                 className="h-20 md:h-32 object-cover float-right ml-2 border-black drop-shadow-md"/>
+                            <h4 className="font-bold text-sm">AI Powered Mental Health
+                                Assistant</h4>
+                            <p
+                                className="text-xs text-gray-600">
+                                <br/>
+                                Experience personalized emotional support and professional advice with
+                                our AI-powered mental health assistant. Anytime, anywhere, our assistant
+                                is here to help you navigate life's challenges, improve your mental
+                                well-being, and enjoy a more fulfilling and balanced life.
+                            </p>
+                            <a className="mb-4 bg-blue-600 text-white px-4 py-2 rounded mr-4 mt-4 float-left flex"
+                               href="https://raadstest.com/ai-powered-mental-health-assistant-paidversion/"
+                               target="_blank">
+                                <Calendar className="mr-2"/>
+                                One Year Access
+                            </a>
+                            <div><br/><br/><br/></div>
+                        </div>
+                    </div>
                 )}
 
                 {paymentCancelled && (

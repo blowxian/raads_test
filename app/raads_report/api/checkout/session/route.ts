@@ -14,14 +14,16 @@ export async function POST(req: NextRequest) {
     let priceId: string;
     switch (plan) {
         case 'basic':
-            // priceId = 'price_1Pea9ERsqc5wnJW18S6sgHcZ';      // Test Price ID
-            priceId = 'price_1PkP1ORsqc5wnJW10jTPQiyV';
+            priceId = 'price_1Pea9ERsqc5wnJW18S6sgHcZ';      // Test Price ID
+            // priceId = 'price_1PkP1ORsqc5wnJW10jTPQiyV';
             break;
         case 'premium':
-            priceId = 'price_1PkP2uRsqc5wnJW1H00EWgPH';
+            priceId = 'price_1Pea9ERsqc5wnJW18S6sgHcZ';      // Test Price ID
+            // priceId = 'price_1PkP2uRsqc5wnJW1H00EWgPH';
             break;
         case 'service':
-            priceId = 'price_1PkP3iRsqc5wnJW1OvKCSjeP';
+            priceId = 'price_1Pea9ERsqc5wnJW18S6sgHcZ';      // Test Price ID
+            // priceId = 'price_1PkP3iRsqc5wnJW1OvKCSjeP';
             break;
         default:
             return NextResponse.json({error: 'Invalid plan specified'});
@@ -36,7 +38,8 @@ export async function POST(req: NextRequest) {
                     quantity: 1,
                 },
             ],
-            mode: 'payment',
+            mode: 'subscription',
+            // mode: 'payment',
             success_url: `${req.headers.get('origin')}/raads_report?score=${score}&status=success&session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `${req.headers.get('origin')}/raads_report?score=${score}&status=cancel`,
             automatic_tax: {enabled: true},

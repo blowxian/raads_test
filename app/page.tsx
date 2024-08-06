@@ -23,7 +23,22 @@ import {
     Users,
     XCircle
 } from 'lucide-react';
+import axios from "axios";
 
+const FEISHU_NOTIFY_WEBHOOK_URL = 'https://open.feishu.cn/open-apis/bot/v2/hook/f3310800-9803-4235-bc20-9557188d6d20';
+
+export async function notifyFeishu(message) {
+    try {
+        await axios.post(FEISHU_NOTIFY_WEBHOOK_URL, {
+            msg_type: 'text',
+            content: {
+                text: message,
+            },
+        });
+    } catch (error) {
+        console.error('Failed to send Feishu notification', error);
+    }
+}
 const getInterpretation = (score: number) => {
     if (score <= 25) return "No Indications of Autism";
     if (score <= 50) return "Presence of Some Traits Associated with Autism, Though It's Unlikely to Be Autism";
@@ -271,7 +286,8 @@ const ebooks = [
 
         <em>“A remarkable work that will stand at the forefront of the neurodiversity movement.”—Barry M. Prizant, PhD, CCC-SLP, author of Uniquely Human: A Different Way of Seeing Autism</em>
         `,
-        link: "#"
+        link: "#",
+        amazonPrice: 10.99
     },
     {
         title: "I Think I Might Be Autistic",
@@ -285,7 +301,8 @@ const ebooks = [
 
         WINNER OF THE SAMUEL JOHNSON PRIZE FOR NONFICTION AND THE CALIFORNIA BOOK AWARD
         `,
-        link: "#"
+        link: "#",
+        amazonPrice: 4.99
     },
     {
         title: "Neuro Tribe",
@@ -293,7 +310,8 @@ const ebooks = [
         description: `
         In her forties, the author was diagnosed with Asperger's syndrome. She addresses aspects of living with ASD as a late-diagnosed adult, including coping with the emotional effect of discovering oneself to be autistic and deciding with whom to share the diagnosis and how.
         `,
-        link: "#"
+        link: "#",
+        amazonPrice: 4.99
     },
 ];
 
@@ -305,6 +323,8 @@ export default function RAADSRReport() {
     const [showEbooks, setShowEbooks] = useState(true);
     const [paymentCancelled, setPaymentCancelled] = useState(false);
     const [showFlash, setShowFlash] = useState(false);
+    const [customerEmail, setCustomerEmail] = useState(null);
+    const [invoiceNumber, setInvoiceNumber] = useState(null);
     const componentRef = useRef(null);
 
     const handlePrint = useReactToPrint({
@@ -322,7 +342,7 @@ export default function RAADSRReport() {
                 onClick={() => setShowEbooks(!showEbooks)}
                 className="flex items-center justify-between w-full p-2 bg-gray-100 rounded"
             >
-                <span className="font-bold">Included eBooks (Premium & Service Packages)</span>
+                <span className="font-bold">Included eBooks</span>
                 {showEbooks ? <ChevronUp className="h-5 w-5"/> : <ChevronDown className="h-5 w-5"/>}
             </button>
             {showEbooks && (
@@ -331,13 +351,19 @@ export default function RAADSRReport() {
                         <div key={index} className="p-2 border rounded">
                             <img src={book.cover} alt={book.title}
                                  className="w-20 md:w-32 object-cover float-left mr-2 border-black drop-shadow-md"/>
-                            <div>
-                                <h4 className="font-bold text-sm">{book.title}</h4>
-                                <p
-                                    className="text-xs text-gray-600"
-                                    style={{whiteSpace: 'pre-wrap'}}
-                                    dangerouslySetInnerHTML={{__html: book.description}}
-                                />
+                            <div className="flex flex-col items-end justify-between h-full">
+                                <div>
+                                    <h4 className="font-bold text-sm">{book.title}</h4>
+                                    <p
+                                        className="text-xs text-gray-600"
+                                        style={{whiteSpace: 'pre-wrap'}}
+                                        dangerouslySetInnerHTML={{__html: book.description}}
+                                    />
+                                </div>
+                                <div>
+                                    <p className="amazon-price font-bold">Amazon Price: <span
+                                        className="text-gray-500 line-through">${book.amazonPrice}</span></p>
+                                </div>
                             </div>
                         </div>
                     ))}
@@ -359,16 +385,25 @@ export default function RAADSRReport() {
                         <div key={index} className="p-2 border rounded">
                             <img src={book.cover} alt={book.title}
                                  className="w-20 md:w-32 object-cover float-left mr-2 border-black drop-shadow-md"/>
-                            <div>
-                                <h4 className="font-bold text-sm">{book.title}</h4>
-                                <p
-                                    className="text-xs text-gray-600"
-                                    style={{whiteSpace: 'pre-wrap'}}
-                                    dangerouslySetInnerHTML={{__html: book.description}}
-                                />
+                            <div className="flex flex-col items-end justify-between h-full">
+                                <div>
+                                    <h4 className="font-bold text-sm">{book.title}</h4>
+                                    <p
+                                        className="text-xs text-gray-600"
+                                        style={{whiteSpace: 'pre-wrap'}}
+                                        dangerouslySetInnerHTML={{__html: book.description}}
+                                    />
+                                </div>
+                                {/*<a className="mb-4 bg-blue-600 text-white px-4 py-2 rounded float-right ml-2 flex items-center"
+                                   href={book.link}>
+                                    Download
+                                </a>*/}
+                                <div className="mt-4 underline">
+                                    Please check your email <em
+                                    className="font-bold">{customerEmail ? customerEmail : ''}</em> for the
+                                    download link.
+                                </div>
                             </div>
-                            <a className="mb-4 bg-blue-600 text-white px-4 py-2 rounded float-right ml-2 flex items-center"
-                               href={book.link}>Download</a>
                         </div>
                     );
                 })}
@@ -396,6 +431,9 @@ export default function RAADSRReport() {
                         console.log(data);
                         setIsPaid(true);
                         setSelectedTier(data.metadata.plan);
+                        setCustomerEmail(data.session.customer_email || data.session.customer_details.email)
+                        setInvoiceNumber(data.invoice.number);
+                        notifyFeishu(`${data.session.customer_email || data.session.customer_details.email} 购买了 ${data.metadata.plan}, 回执编号 ${data.invoice.number}`)
                     })
                     .catch(error => {
                         console.error("Failed to verify payment:", error);
@@ -552,16 +590,26 @@ export default function RAADSRReport() {
                                         <div className="p-2 border rounded">
                                             <img src="/raads_report/thumbnail/ai_assistant.png" alt="AI Assistant"
                                                  className="h-20 md:h-32 object-cover float-right ml-2 border-black drop-shadow-md"/>
-                                            <h4 className="font-bold text-sm">AI Powered Mental Health
-                                                Assistant</h4>
-                                            <p
-                                                className="text-xs text-gray-600">
-                                                <br/>
-                                                Experience personalized emotional support and professional advice with
-                                                our AI-powered mental health assistant. Anytime, anywhere, our assistant
-                                                is here to help you navigate life&apos;s challenges, improve your mental
-                                                well-being, and enjoy a more fulfilling and balanced life.
-                                            </p>
+                                            <div className="flex flex-col items-start justify-between h-full">
+                                                <div>
+                                                    <h4 className="font-bold text-sm">AI Powered Mental Health
+                                                        Assistant</h4>
+                                                    <p
+                                                        className="text-xs text-gray-600">
+                                                        <br/>
+                                                        Experience personalized emotional support and professional
+                                                        advice with
+                                                        our AI-powered mental health assistant. Anytime, anywhere, our
+                                                        assistant
+                                                        is here to help you navigate life&apos;s challenges, improve
+                                                        your mental
+                                                        well-being, and enjoy a more fulfilling and balanced life.
+                                                    </p>
+                                                </div>
+                                                <p className="amazon-price font-bold">One-Year Access: <span
+                                                    className="text-gray-500 line-through">$199.99</span>
+                                                </p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -616,6 +664,12 @@ export default function RAADSRReport() {
                                 report and additional resources.</p>
                         </div>
                     </div>
+                )}
+
+                {isPaid && (
+                    <div className="font-italic text-xs text-gray-500 mt-4"><em>Here is your Invoice
+                        Number: {invoiceNumber}. If you have any questions, please contact us at:
+                        wd.gstar@gmail.com</em></div>
                 )}
             </div>
         </div>

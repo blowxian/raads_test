@@ -19,7 +19,23 @@ export async function GET(req: NextRequest) {
             const metadata = session.metadata;
             console.log('metadata: ', metadata);
 
-            return NextResponse.json({success: true, metadata, session});
+            // 获取发票 ID
+            const invoice_id = session.invoice as string;
+
+            if (invoice_id) {
+                // 检索发票详细信息
+                const invoice = await stripe.invoices.retrieve(invoice_id);
+                console.log('invoice: ', invoice);
+
+                return NextResponse.json({success: true, metadata, session, invoice});
+            } else {
+                return NextResponse.json({
+                    success: true,
+                    metadata,
+                    session,
+                    message: 'No invoice associated with this session'
+                });
+            }
         } else {
             return NextResponse.json({success: false, message: 'Payment not completed'});
         }

@@ -668,8 +668,10 @@ export default function RAADSRReport() {
                 )}
 
                 {isPaid && (
-                    <div className="font-italic text-xs text-gray-500 mt-4"><em>Here is your Invoice
-                        Number: {invoiceNumber}. If you have any questions, please contact us at:
+                    <div className="font-italic text-xs text-gray-500 mt-4">
+                        <em>{invoiceNumber ? "Here is your Invoice\n" +
+                            "                        Number: " + invoiceNumber : "Payment Error"}. If you have any
+                            questions, please contact us at:
                         wd.gstar@gmail.com</em></div>
                 )}
             </div>

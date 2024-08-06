@@ -21,6 +21,7 @@ export async function GET(req: NextRequest) {
 
             // 获取发票 ID
             const invoice_id = session.invoice as string;
+            console.log("invoice_id: ", invoice_id);
 
             if (invoice_id) {
                 // 检索发票详细信息

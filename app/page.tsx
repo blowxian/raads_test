@@ -27,7 +27,7 @@ import axios from "axios";
 
 const FEISHU_NOTIFY_WEBHOOK_URL = 'https://open.feishu.cn/open-apis/bot/v2/hook/f3310800-9803-4235-bc20-9557188d6d20';
 
-export async function notifyFeishu(message) {
+async function notifyFeishu(message: any) {
     try {
         await axios.post(FEISHU_NOTIFY_WEBHOOK_URL, {
             msg_type: 'text',
@@ -39,6 +39,7 @@ export async function notifyFeishu(message) {
         console.error('Failed to send Feishu notification', error);
     }
 }
+
 const getInterpretation = (score: number) => {
     if (score <= 25) return "No Indications of Autism";
     if (score <= 50) return "Presence of Some Traits Associated with Autism, Though It's Unlikely to Be Autism";

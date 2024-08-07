@@ -266,13 +266,6 @@ const getInterpretationDetails = (score: number) => {
 
 const pricingTiers = [
     {
-        name: "basic",
-        title: "Basic",
-        originalPrice: 18.00,
-        price: 8,
-        features: ["1 eBook"],
-    },
-    {
         name: "premium",
         title: "Premium",
         originalPrice: 38,
@@ -506,7 +499,7 @@ export default function RAADSRReport() {
                             <h2 className="text-2xl font-bold mb-4">Unlock Your RAADS-R Report</h2>
                             <p className="mb-6">Choose a package to access your complete RAADS-R evaluation report and
                                 additional resources.</p>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
                                 {pricingTiers.map((tier, index) => (
                                     <div key={index}
                                          className={`border-2 rounded-lg p-4 flex flex-col justify-between ${showFlash ? 'flash-border' : ''}`}>

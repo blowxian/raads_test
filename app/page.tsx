@@ -360,7 +360,7 @@ export default function RAADSRReport() {
                                     />
                                 </div>
                                 <div>
-                                    <p className="amazon-price font-bold">Amazon Price: <span
+                                    <p className="amazon-price font-bold">Retail Price: <span
                                         className="text-gray-500 line-through">${book.amazonPrice}</span></p>
                                 </div>
                             </div>

@@ -328,6 +328,7 @@ export default function RAADSRReport() {
     const [customerEmail, setCustomerEmail] = useState(null);
     const [invoiceNumber, setInvoiceNumber] = useState(null);
     const componentRef = useRef(null);
+    const purchaseRef = useRef(null); // 用于滚动到购买区域
 
     const handlePrint = useReactToPrint({
         content: () => componentRef.current,
@@ -489,49 +490,6 @@ export default function RAADSRReport() {
         <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
             <div>
 
-                {/* Payment overlay */}
-                {!selectedTier && (
-                    <div
-                        className="flex items-center justify-center overflow-auto">
-                        <div
-                            className="text-center p-4 sm:p-8 w-full max-w-4xl h-full">
-                            <Lock className="h-12 w-12 mx-auto mb-4 text-blue-600"/>
-                            <h2 className="text-2xl font-bold mb-4">Unlock Your RAADS-R Report</h2>
-                            <p className="mb-6">Choose a package to access your complete RAADS-R evaluation report and
-                                additional resources.</p>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-                                {pricingTiers.map((tier, index) => (
-                                    <div key={index}
-                                         className={`border-2 rounded-lg p-4 flex flex-col justify-between ${showFlash ? 'flash-border' : ''}`}>
-                                        <div>
-                                            <h3 className="font-bold text-lg mb-2">{tier.title}</h3>
-                                            <div className="mb-4">
-                                                <span className="text-2xl font-bold text-green-600">${tier.price}</span>
-                                                <span
-                                                    className="text-sm text-gray-500 line-through ml-2">${tier.originalPrice}</span>
-                                            </div>
-                                            <ul className="text-left mb-4">
-                                                {tier.features.map((feature, fIndex) => (
-                                                    <li key={fIndex} className="flex items-center mb-2">
-                                                        <Check className="h-4 w-4 mr-2 text-green-500 flex-shrink-0"/>
-                                                        <span className="text-sm">{feature}</span>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </div>
-                                        <button
-                                            onClick={() => handlePayment(tier.name as any)}
-                                            className="bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition duration-300 mt-auto"
-                                        >
-                                            Select
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                )}
-
                 <div className="w-full flex flex-wrap md:justify-end button-container">
                     <button onClick={handlePrint}
                             className={`mb-4 px-4 py-2 rounded ml-4 flex items-center ${
@@ -547,7 +505,7 @@ export default function RAADSRReport() {
                     </button>
                 </div>
 
-                <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-4xl" ref={componentRef}>
+                <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-4xl relative" ref={componentRef}>
                     <h1 className="text-2xl font-bold mb-4">RAADS-R Evaluation Report</h1>
                     <p className="text-sm text-gray-600 mb-4">Evaluation Date: {new Date().toLocaleDateString()}</p>
 
@@ -604,7 +562,66 @@ export default function RAADSRReport() {
                         <p>Your evaluation data is confidential and used only for your personal assessment. We strictly
                             protect your privacy and ensure your personal information is not disclosed.</p>
                     </div>
+
+                    {/* Lock icon and unlock button */}
+                    {!isPaid && (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center mt-6">
+                            <Lock className="h-16 w-16 text-blue-600 mb-4"/>
+                            <button
+                                className="bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition duration-300"
+                                onClick={() => {
+                                    purchaseRef.current?.scrollIntoView({behavior: 'smooth'});
+                                }}
+                            >
+                                Unlock Full Report
+                            </button>
+                        </div>
+                    )}
                 </div>
+
+                {/* Payment overlay */}
+                {!selectedTier && (
+                    <div
+                        ref={purchaseRef}
+                        className="flex items-center justify-center overflow-auto mt-6">
+                        <div
+                            className="text-center p-4 sm:p-8 w-full max-w-4xl h-full">
+                            <Lock className="h-12 w-12 mx-auto mb-4 text-blue-600"/>
+                            <h2 className="text-2xl font-bold mb-4">Unlock Your RAADS-R Report</h2>
+                            <p className="mb-6">Choose a package to access your complete RAADS-R evaluation report and
+                                additional resources.</p>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                                {pricingTiers.map((tier, index) => (
+                                    <div key={index}
+                                         className={`border-2 rounded-lg p-4 flex flex-col justify-between ${showFlash ? 'flash-border' : ''}`}>
+                                        <div>
+                                            <h3 className="font-bold text-lg mb-2">{tier.title}</h3>
+                                            <div className="mb-4">
+                                                <span className="text-2xl font-bold text-green-600">${tier.price}</span>
+                                                <span
+                                                    className="text-sm text-gray-500 line-through ml-2">${tier.originalPrice}</span>
+                                            </div>
+                                            <ul className="text-left mb-4">
+                                                {tier.features.map((feature, fIndex) => (
+                                                    <li key={fIndex} className="flex items-center mb-2">
+                                                        <Check className="h-4 w-4 mr-2 text-green-500 flex-shrink-0"/>
+                                                        <span className="text-sm">{feature}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                        <button
+                                            onClick={() => handlePayment(tier.name as any)}
+                                            className="bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition duration-300 mt-auto"
+                                        >
+                                            Select
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {!selectedTier && (
                     <>
@@ -704,7 +721,7 @@ export default function RAADSRReport() {
                         <em>{invoiceNumber ? "Here is your Invoice\n" +
                             "                        Number: " + invoiceNumber : "Payment Error"}. If you have any
                             questions, please contact us at:
-                        wd.gstar@gmail.com</em></div>
+                            wd.gstar@gmail.com</em></div>
                 )}
             </div>
         </div>

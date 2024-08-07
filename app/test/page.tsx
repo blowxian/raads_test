@@ -132,7 +132,7 @@ export default function QuizPage() {
         console.log('Submit:', answers);
         // 构建查询字符串
         const queryString = Object.keys(answers)
-            .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(answers[key])}`)
+            .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(answers[key as any])}`)
             .join('&');
         // 在新页面中打开
         window.open(`/?${queryString}`, '_blank');

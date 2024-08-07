@@ -8,18 +8,11 @@
  * @param {number} value - 事件的数值（例如持续时间）
  */
 export const logEvent = (action: string, category: string, label: string, value: number): void => {
-    if (typeof window !== 'undefined' && window.gtag) {
-        window.gtag('event', action, {
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+        (window as any).gtag('event', action, {
             event_category: category,
             event_label: label,
             value: value,
         });
     }
-}
-
-// 为了使 TypeScript 知道 gtag 的类型，可以在 global.d.ts 文件中声明它
-
-// /global.d.ts
-interface Window {
-    gtag: (event: string, action: string, params: { [key: string]: any }) => void;
 }

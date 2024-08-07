@@ -26,7 +26,7 @@ import {
 import axios from "axios";
 import {logEvent} from '@/lib/GAlog';
 
-const FEISHU_NOTIFY_WEBHOOK_URL = 'https://open.feishu.cn/open-apis/bot/v2/hook/f3310800-9803-4235-bc20-9557188d6d20';
+const FEISHU_NOTIFY_WEBHOOK_URL = 'https://open.feishu.cn/open-apis/bot/v2/hook/f4c87354-47b7-4ad1-83ff-a56962dc83a1';
 
 async function notifyFeishu(message: any) {
     try {

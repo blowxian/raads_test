@@ -40,7 +40,7 @@ async function notifyFeishu(message: any) {
     }
 }
 
-async function getIPLocation(ip) {
+async function getIPLocation(ip: any) {
     try {
         const response = await axios.get(`https://ipapi.co/${ip}/json/`);
         return response.data;
@@ -480,9 +480,9 @@ export default function RAADSRReport() {
                     const currentUrl = window.location.href; // 获取当前请求的 URL
 
                     if (location) {
-                        notifyFeishu(`[${process.env.NEXT_PUBLIC_ENV_HINT}] [${formattedDate}] IP: ${ip} [${location.city}, ${location.region}, ${location.country_name}], 用户访问报告详情页: ${currentUrl}`);
+                        notifyFeishu(`[${currentUrl}] [${formattedDate}] IP: ${ip} [${location.city}, ${location.region}, ${location.country_name}], 用户访问报告详情页`);
                     } else {
-                        notifyFeishu(`[${process.env.NEXT_PUBLIC_ENV_HINT}] [${formattedDate}] IP: ${ip}, 用户访问报告详情页: ${currentUrl}`);
+                        notifyFeishu(`[${currentUrl}] [${formattedDate}] IP: ${ip}, 用户访问报告详情页`);
                     }
                 });
 

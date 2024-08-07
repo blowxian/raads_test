@@ -280,17 +280,6 @@ const pricingTiers = [
 
 const ebooks = [
     {
-        title: "Unmasking Autism",
-        cover: "/raads_report/ebook/unmasking_autism.jpg",
-        description: `
-        A deep dive into the spectrum of Autistic experience and the phenomenon of masked Autism, giving individuals the tools to safely uncover their true selves while broadening society’s narrow understanding of neurodiversity.
-
-        <em>“A remarkable work that will stand at the forefront of the neurodiversity movement.”—Barry M. Prizant, PhD, CCC-SLP, author of Uniquely Human: A Different Way of Seeing Autism</em>
-        `,
-        link: "#",
-        amazonPrice: 10.99
-    },
-    {
         title: "I Think I Might Be Autistic",
         cover: "/raads_report/ebook/i_think_i_might_be_autistic.jpg",
         description: `
@@ -302,8 +291,8 @@ const ebooks = [
 
         WINNER OF THE SAMUEL JOHNSON PRIZE FOR NONFICTION AND THE CALIFORNIA BOOK AWARD
         `,
-        link: "#",
-        amazonPrice: 4.99
+        link: "/raads_report/ebook/I Think I Might Be Autistic A Guide to Autism Spectrum Disorder Diagnosis and Self-Discovery for Adults (Cynthia Kim) .epub",
+        amazonPrice: 12.99
     },
     {
         title: "Neuro Tribe",
@@ -311,8 +300,17 @@ const ebooks = [
         description: `
         In her forties, the author was diagnosed with Asperger's syndrome. She addresses aspects of living with ASD as a late-diagnosed adult, including coping with the emotional effect of discovering oneself to be autistic and deciding with whom to share the diagnosis and how.
         `,
-        link: "#",
-        amazonPrice: 4.99
+        link: "/raads_report/ebook/Neurotribes The Legacy of Autism and the Future of Neurodiversity (Steve Silberman) .epub",
+        amazonPrice: 12.99
+    },
+    {
+        title: "Autism and Asperger Syndrome in Adults",
+        cover: "/raads_report/ebook/autism_and_asperger_syndrome_in_adults.jpg",
+        description: `
+        Autism is still persistently viewed as a disorder or impairment, but this concept needs to be challenged. Written by a university lecturer with several years’ experience in the field, this helpful book presents an up-to-date overview of autism and Asperger syndrome. Dr Luke Beardon comments on the realities of adult life, including further and higher education, employment, dating and parenthood. Autism and Asperger Syndrome in Adults is written for autistic people, their families and friends, and all professionals interested in autism.
+        `,
+        link: "/raads_report/ebook/Autism and Asperger Syndrome in Adults (Beardon Luke Dr) .epub",
+        amazonPrice: 8.99
     },
 ];
 
@@ -395,15 +393,15 @@ export default function RAADSRReport() {
                                         dangerouslySetInnerHTML={{__html: book.description}}
                                     />
                                 </div>
-                                {/*<a className="mb-4 bg-blue-600 text-white px-4 py-2 rounded float-right ml-2 flex items-center"
+                                <a className="mb-4 bg-blue-600 text-white px-4 py-2 rounded float-right ml-2 flex items-center"
                                    href={book.link}>
                                     Download
-                                </a>*/}
-                                <div className="mt-4 underline">
+                                </a>
+                                {/*<div className="mt-4 underline">
                                     Please check your email <em
                                     className="font-bold">{customerEmail ? customerEmail : ''}</em> for the
                                     download link.
-                                </div>
+                                </div>*/}
                             </div>
                         </div>
                     );
@@ -433,8 +431,8 @@ export default function RAADSRReport() {
                         setIsPaid(true);
                         setSelectedTier(data.metadata.plan);
                         setCustomerEmail(data.session.customer_email || data.session.customer_details.email)
-                        setInvoiceNumber(data.invoice.number);
-                        notifyFeishu(`${data.session.customer_email || data.session.customer_details.email} 购买了 ${data.metadata.plan}, 回执编号 ${data.invoice.number}`)
+                        setInvoiceNumber(data.invoice?.number);
+                        notifyFeishu(`${data.session.customer_email || data.session.customer_details.email} 购买了 ${data.metadata.plan}, 回执编号 ${data.invoice.number ? data.invoice.number : "无"}, 在 ${new Date().toLocaleString()} 访问了购买成功页面`)
                     })
                     .catch(error => {
                         console.error("Failed to verify payment:", error);

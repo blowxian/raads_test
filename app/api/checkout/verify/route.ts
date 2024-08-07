@@ -19,6 +19,9 @@ export async function GET(req: NextRequest) {
             const metadata = session.metadata;
             console.log('metadata: ', metadata);
 
+            // 在日志中输出用户邮箱及当前时间
+            console.log(`User email: ${session.customer_email || session.customer_details?.email} | Time: ${new Date().toLocaleString()}`);
+
             // 获取发票 ID
             const invoice_id = session.invoice as string;
             console.log("invoice_id: ", invoice_id);

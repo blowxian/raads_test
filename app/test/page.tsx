@@ -1,12 +1,12 @@
 "use client"
 
 import React, {useEffect, useState} from 'react';
-import {useRouter} from 'next/navigation'; // 在 App Router 模式下引入 useRouter
+import {useRouter} from 'next/navigation';
 
 const questions = [
     {"id": 1, "text": "I am a sympathetic person."},
-    {"id": 2, "text": "I often use words and phrases from movies and television in conversations."},
-    /*{ "id": 3, "text": "I am often surprised when others tell me I have been rude." },
+    {"id": 2, "text": "I often use words and phrases from movies and television in conversations."},/*
+    { "id": 3, "text": "I am often surprised when others tell me I have been rude." },
     { "id": 4, "text": "Sometimes I talk too loudly or too softly, and I am not aware of it." },
     { "id": 5, "text": "I often don't know how to act in social situations." },
     { "id": 6, "text": "I can 'put myself in other people's shoes.'" },
@@ -93,12 +93,26 @@ const options = [
     "Never true"
 ];
 
+const scoreMap = {
+    "symptom": [3, 2, 1, 0],
+    "non-symptom": [0, 1, 2, 3]
+};
+
+// 标记带有星号的问题
+const starQuestions = [1, 6, 11, 18, 23, 26, 33, 37, 43, 47, 53, 58, 62, 68, 72, 77];
+
 export default function QuizPage() {
     const [currentQuestion, setCurrentQuestion] = useState(0);
     const [answers, setAnswers] = useState<Record<number, number>>({});
     const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 0);
     const [showWarning, setShowWarning] = useState(false);
-    const router = useRouter();  // 初始化 useRouter
+    const [showFinalWarning, setShowFinalWarning] = useState(false);
+    const [showNameEmail, setShowNameEmail] = useState(false);
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [showNameEmailWarning, setShowNameEmailWarning] = useState(false);
+    const [testComplete, setTestComplete] = useState(false);
+    const router = useRouter();
 
     useEffect(() => {
         function handleResize() {
@@ -111,36 +125,76 @@ export default function QuizPage() {
 
     const handleAnswer = (value: number) => {
         setAnswers({...answers, [currentQuestion]: value});
-        setShowWarning(false);  // Reset warning when an answer is selected
+        setShowWarning(false);
+        setShowFinalWarning(false);
     };
 
     const goToPrevious = () => {
         setCurrentQuestion(Math.max(0, currentQuestion - 1));
-        setShowWarning(false);  // Reset warning when navigating
+        setShowWarning(false);
     };
 
     const goToNext = () => {
         if (answers[currentQuestion] !== undefined) {
             setCurrentQuestion(Math.min(questions.length - 1, currentQuestion + 1));
-            setShowWarning(false);  // Reset warning when navigating
+            setShowWarning(false);
         } else {
-            setShowWarning(true);  // Show warning if answer is not selected
+            setShowWarning(true);
         }
     };
 
+    const calculateScore = () => {
+        let totalScore = 0;
+        questions.forEach((question, index) => {
+            const answer = answers[index];
+            if (answer !== undefined) {
+                if (starQuestions.includes(question.id)) {
+                    totalScore += scoreMap["non-symptom"][answer];
+                } else {
+                    totalScore += scoreMap["symptom"][answer];
+                }
+            }
+        });
+        return totalScore;
+    };
+
     const handleSubmit = () => {
+        const allQuestionsAnswered = questions.every((_, index) => answers[index] !== undefined);
+        if (!allQuestionsAnswered) {
+            setShowFinalWarning(true);
+            return;
+        }
+
+        setShowNameEmail(true);
+    };
+
+    const handleFinalSubmit = () => {
+        if (name.trim() === '' || email.trim() === '') {
+            setShowNameEmailWarning(true);
+            return;
+        }
+
+        const totalScore = calculateScore();
         console.log('Submit:', answers);
-        // 构建查询字符串
-        const queryString = Object.keys(answers)
-            .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(answers[key as any])}`)
-            .join('&');
-        // 在新页面中打开
-        window.open(`/?${queryString}`, '_blank');
+        console.log('Total Score:', totalScore);
+        window.open(`/?score=${totalScore}&name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}`, '_blank');
+        setTestComplete(true);
+    };
+
+    const handleRetake = () => {
+        setCurrentQuestion(0);
+        setAnswers({});
+        setShowWarning(false);
+        setShowFinalWarning(false);
+        setShowNameEmail(false);
+        setName('');
+        setEmail('');
+        setShowNameEmailWarning(false);
+        setTestComplete(false);
     };
 
     const question = questions[currentQuestion];
 
-    // Calculate the skew and rotation based on window width
     const skewValue = Math.max(0, Math.min(6, (768 - windowWidth) / 768 * 6));
     const rotateValue = Math.max(0, Math.min(6, (windowWidth - 768) / (1024 - 768) * 6));
 
@@ -161,60 +215,108 @@ export default function QuizPage() {
                     <div className="max-w-md mx-auto">
                         <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-900 mb-6">RAADS-R
                             Testing</h2>
-                        <p className="text-lg sm:text-xl font-semibold mb-4">{`${currentQuestion + 1}. ${question.text}`}</p>
-                        <div className="space-y-4">
-                            {options.map((option, index) => (
-                                <div key={index} className="flex items-center">
-                                    <input
-                                        id={`option-${index}`}
-                                        name="answer"
-                                        type="radio"
-                                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
-                                        checked={answers[currentQuestion] === index}
-                                        onChange={() => handleAnswer(index)}
-                                    />
-                                    <label htmlFor={`option-${index}`}
-                                           className="ml-3 block text-sm sm:text-base font-medium text-gray-700">
-                                        {option}
-                                    </label>
+                        {!showNameEmail && !testComplete && (
+                            <>
+                                <p className="text-lg sm:text-xl font-semibold mb-4">{`${currentQuestion + 1}. ${question.text}`}</p>
+                                <div className="space-y-4">
+                                    {options.map((option, index) => (
+                                        <div key={index} className="flex items-center">
+                                            <input
+                                                id={`option-${index}`}
+                                                name="answer"
+                                                type="radio"
+                                                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                                                checked={answers[currentQuestion] === index}
+                                                onChange={() => handleAnswer(index)}
+                                            />
+                                            <label htmlFor={`option-${index}`}
+                                                   className="ml-3 block text-sm sm:text-base font-medium text-gray-700">
+                                                {option}
+                                            </label>
+                                        </div>
+                                    ))}
                                 </div>
-                            ))}
-                        </div>
-                        {showWarning && (
-                            <p className="text-red-500 text-sm mt-2">Please select an answer before proceeding.</p>
+                                {showWarning && (
+                                    <p className="text-red-500 text-sm mt-2">Please select an answer before
+                                        proceeding.</p>
+                                )}
+                                <div className="h-2 bg-gray-200 rounded-full mt-6">
+                                    <div
+                                        className="h-full bg-blue-500 rounded-full"
+                                        style={{width: `${progress}%`}}
+                                    ></div>
+                                </div>
+                                <div className="mt-6 sm:mt-8 flex justify-between items-center">
+                                    <button
+                                        onClick={goToPrevious}
+                                        disabled={currentQuestion === 0}
+                                        className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-l disabled:opacity-50 text-sm sm:text-base"
+                                    >
+                                        Previous
+                                    </button>
+                                    <span
+                                        className="text-xs sm:text-sm text-gray-500">{`${currentQuestion + 1} out of ${questions.length}`}</span>
+                                    {currentQuestion === questions.length - 1 ? (
+                                        <button
+                                            onClick={handleSubmit}
+                                            className={`font-bold py-2 px-4 rounded-r text-sm sm:text-base ${Object.keys(answers).length === questions.length ? 'bg-cyan-500 hover:bg-cyan-700 text-white' : 'bg-gray-300 text-gray-800 cursor-not-allowed'}`}
+                                        >
+                                            View Report
+                                        </button>
+                                    ) : (
+                                        <button
+                                            onClick={goToNext}
+                                            className="bg-cyan-500 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded-r text-sm sm:text-base"
+                                        >
+                                            Next
+                                        </button>
+                                    )}
+                                </div>
+                                {showFinalWarning && (
+                                    <p className="text-red-500 text-sm mt-2">Please answer all questions before viewing
+                                        the report.</p>
+                                )}
+                            </>
                         )}
-                        <div className="h-2 bg-gray-200 rounded-full mt-6">
-                            <div
-                                className="h-full bg-blue-500 rounded-full"
-                                style={{width: `${progress}%`}}
-                            ></div>
-                        </div>
-                        <div className="mt-6 sm:mt-8 flex justify-between items-center">
-                            <button
-                                onClick={goToPrevious}
-                                disabled={currentQuestion === 0}
-                                className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-l disabled:opacity-50 text-sm sm:text-base"
-                            >
-                                Previous
-                            </button>
-                            <span
-                                className="text-xs sm:text-sm text-gray-500">{`${currentQuestion + 1} out of ${questions.length}`}</span>
-                            {currentQuestion === questions.length - 1 ? (
+                        {showNameEmail && !testComplete && (
+                            <div className="mt-6 space-y-4">
+                                <input
+                                    type="text"
+                                    placeholder="Name"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    className="w-full p-2 border border-gray-300 rounded"
+                                />
+                                <input
+                                    type="email"
+                                    placeholder="Email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="w-full p-2 border border-gray-300 rounded"
+                                />
+                                {showNameEmailWarning && (
+                                    <p className="text-red-500 text-sm mt-2">Please enter your name and email.</p>
+                                )}
                                 <button
-                                    onClick={handleSubmit}
-                                    className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-r text-sm sm:text-base"
+                                    onClick={handleFinalSubmit}
+                                    className="bg-cyan-500 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded mx-auto block"
                                 >
-                                    View Report
+                                    Submit
                                 </button>
-                            ) : (
+                            </div>
+                        )}
+                        {testComplete && (
+                            <div className="mt-6 space-y-4 text-center">
+                                <p className="text-lg sm:text-xl font-semibold">Thank you! You can view your report in
+                                    the new tab.</p>
                                 <button
-                                    onClick={goToNext}
-                                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-r text-sm sm:text-base"
+                                    onClick={handleRetake}
+                                    className="bg-cyan-500 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded"
                                 >
-                                    Next
+                                    Retake Test
                                 </button>
-                            )}
-                        </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

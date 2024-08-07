@@ -5,7 +5,7 @@ import {useRouter} from 'next/navigation';
 
 const questions = [
     {"id": 1, "text": "I am a sympathetic person."},
-    {"id": 2, "text": "I often use words and phrases from movies and television in conversations."},/*
+    {"id": 2, "text": "I often use words and phrases from movies and television in conversations."},
     { "id": 3, "text": "I am often surprised when others tell me I have been rude." },
     { "id": 4, "text": "Sometimes I talk too loudly or too softly, and I am not aware of it." },
     { "id": 5, "text": "I often don't know how to act in social situations." },
@@ -83,7 +83,7 @@ const questions = [
     { "id": 77, "text": "I like to have close friends." },
     { "id": 78, "text": "People tell me that I give too much detail." },
     { "id": 79, "text": "I am often told that I ask embarrassing questions." },
-    { "id": 80, "text": "I tend to point out other people's mistakes." }*/
+    {"id": 80, "text": "I tend to point out other people's mistakes."}
 ];
 
 const options = [
@@ -202,7 +202,7 @@ export default function QuizPage() {
 
     return (
         <div
-            className="min-h-screen bg-gray-100 flex flex-col space-y-4 items-center justify-center p-4 sm:p-6 md:p-8 lg:p-10">
+            className="min-h-screen flex flex-col space-y-4 items-center justify-center p-4 sm:p-6 md:p-8 lg:p-10">
             <div className="relative w-full max-w-2xl mx-auto">
                 <div
                     className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-light-blue-500 shadow-lg rounded-3xl"

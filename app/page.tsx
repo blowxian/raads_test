@@ -432,7 +432,13 @@ export default function RAADSRReport() {
                         setSelectedTier(data.metadata.plan);
                         setCustomerEmail(data.session.customer_email || data.session.customer_details.email)
                         setInvoiceNumber(data.invoice?.number);
-                        notifyFeishu(`${data.session.customer_email || data.session.customer_details.email} 购买了 ${data.metadata.plan}, 回执编号 ${data.invoice.number ? data.invoice.number : "无"}, 在 ${new Date().toLocaleString()} 访问了购买成功页面`)
+
+                        // 获取当前时间并转换为东八区时间格式
+                        const date = new Date();
+                        const options = {timeZone: 'Asia/Shanghai', hour12: false};
+                        const formattedDate = date.toLocaleString('zh-CN', options);
+
+                        notifyFeishu(`[${process.env.NEXT_PUBLIC_ENV_HINT}] ${data.session.customer_email || data.session.customer_details.email} 购买了 ${data.metadata.plan}, 回执编号 ${data.invoice.number ? data.invoice.number : "无"}, 在 ${formattedDate} 访问了购买成功页面`)
                     })
                     .catch(error => {
                         console.error("Failed to verify payment:", error);
@@ -449,6 +455,22 @@ export default function RAADSRReport() {
                 setShowFlash(false);
             }, 6000); // 6秒后停止边框闪烁
         }
+
+        // Fetch user IP and send notification
+        axios.get('https://api.ipify.org?format=json')
+            .then(response => {
+                const ip = response.data.ip;
+
+                // 获取当前时间并转换为东八区时间格式
+                const date = new Date();
+                const options = {timeZone: 'Asia/Shanghai', hour12: false};
+                const formattedDate = date.toLocaleString('zh-CN', options);
+
+                notifyFeishu(`[${process.env.NEXT_PUBLIC_ENV_HINT}] [${formattedDate}] IP: ${ip}, 用户访问报告详情页`);
+            })
+            .catch(error => {
+                console.error('Failed to fetch IP address:', error);
+            });
     }, [searchParams]);
 
     return (

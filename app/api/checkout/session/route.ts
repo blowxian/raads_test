@@ -1,14 +1,39 @@
 import Stripe from 'stripe';
 import {NextRequest, NextResponse} from 'next/server';
+import axios from "axios";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
+const FEISHU_NOTIFY_WEBHOOK_URL = 'https://open.feishu.cn/open-apis/bot/v2/hook/f3310800-9803-4235-bc20-9557188d6d20';
+
+async function notifyFeishu(message: any) {
+    try {
+        await axios.post(FEISHU_NOTIFY_WEBHOOK_URL, {
+            msg_type: 'text',
+            content: {
+                text: message,
+            },
+        });
+    } catch (error) {
+        console.error('Failed to send Feishu notification', error);
+    }
+}
 
 export async function POST(req: NextRequest) {
     const formData = await req.formData();
 
     const score = formData.get('score') ? Number(formData.get('score')) : undefined;
     const plan = formData.get('plan')?.toString();
-    console.log('plan:', plan);
+
+    // 获取客户端 IP 地址
+    const ip = req.headers.get('x-forwarded-for') || req.ip || 'IP not found';
+
+    // 获取当前时间并转换为东八区时间格式
+    const date = new Date();
+    const options = {timeZone: 'Asia/Shanghai', hour12: false};
+    const formattedDate = date.toLocaleString('zh-CN', options);
+
+    console.log(`[${process.env.NEXT_PUBLIC_ENV_HINT}] [${formattedDate}] IP: ${ip}, 用户访问报告支付页  ${plan}`);
+    notifyFeishu(`[${process.env.NEXT_PUBLIC_ENV_HINT}] [${formattedDate}] IP: ${ip}, 用户访问报告支付页 ${plan}`);
 
     // 根据 plan 动态设置 price ID
     let priceId: string;

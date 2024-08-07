@@ -203,7 +203,7 @@ export default function QuizPage() {
     return (
         <div
             className="min-h-screen flex flex-col space-y-4 items-center justify-center p-4 sm:p-6 md:p-8 lg:p-10">
-            <div className="relative w-full max-w-2xl mx-auto">
+            <div className="relative w-full max-w-3xl mx-auto">
                 <div
                     className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-light-blue-500 shadow-lg rounded-3xl"
                     style={{
@@ -212,9 +212,7 @@ export default function QuizPage() {
                     }}
                 ></div>
                 <div className="relative bg-white shadow-lg rounded-3xl p-4 sm:p-10">
-                    <div className="max-w-md mx-auto">
-                        <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-900 mb-6">RAADS-R
-                            Testing</h2>
+                    <div className="max-w-lg mx-auto">
                         {!showNameEmail && !testComplete && (
                             <>
                                 <p className="text-lg sm:text-xl font-semibold mb-4">{`${currentQuestion + 1}. ${question.text}`}</p>

@@ -40,6 +40,16 @@ async function notifyFeishu(message: any) {
     }
 }
 
+async function getIPLocation(ip) {
+    try {
+        const response = await axios.get(`https://ipapi.co/${ip}/json/`);
+        return response.data;
+    } catch (error) {
+        console.error('Failed to fetch IP location:', error);
+        return null;
+    }
+}
+
 const getInterpretation = (score: number) => {
     if (score <= 25) return "No Indications of Autism";
     if (score <= 50) return "Presence of Some Traits Associated with Autism, Though It's Unlikely to Be Autism";
@@ -466,7 +476,16 @@ export default function RAADSRReport() {
                 const options = {timeZone: 'Asia/Shanghai', hour12: false};
                 const formattedDate = date.toLocaleString('zh-CN', options);
 
-                notifyFeishu(`[${process.env.NEXT_PUBLIC_ENV_HINT}] [${formattedDate}] IP: ${ip}, 用户访问报告详情页`);
+                getIPLocation(ip).then(location => {
+                    const currentUrl = window.location.href; // 获取当前请求的 URL
+
+                    if (location) {
+                        notifyFeishu(`[${process.env.NEXT_PUBLIC_ENV_HINT}] [${formattedDate}] IP: ${ip} [${location.city}, ${location.region}, ${location.country_name}], 用户访问报告详情页: ${currentUrl}`);
+                    } else {
+                        notifyFeishu(`[${process.env.NEXT_PUBLIC_ENV_HINT}] [${formattedDate}] IP: ${ip}, 用户访问报告详情页: ${currentUrl}`);
+                    }
+                });
+
             })
             .catch(error => {
                 console.error('Failed to fetch IP address:', error);

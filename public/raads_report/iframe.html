@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Responsive iFrame Quiz Page</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+        }
+
+        #iframe-container {
+            flex-grow: 1;
+            position: relative;
+            width: 100%;
+        }
+
+        #quiz-iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+<div style="height:500px"></div>
+<div id="iframe-container">
+    <iframe allowfullscreen id="quiz-iframe" src="/test"></iframe>
+</div>
+<div style="height:500px"></div>
+
+<script>
+    function adjustIframeHeight() {
+        var container = document.getElementById('iframe-container');
+        var iframe = document.getElementById('quiz-iframe');
+        var windowHeight = window.innerHeight;
+        var windowWidth = window.innerWidth;
+
+        container.style.height = windowHeight + 'px';
+        iframe.style.height = '100%';
+    }
+
+    function scrollToIframeCenter() {
+        var iframe = document.getElementById('quiz-iframe');
+        var iframeRect = iframe.getBoundingClientRect();
+        var scrollY = window.scrollY + iframeRect.top - (window.innerHeight / 2 - iframeRect.height / 2);
+
+        window.scrollTo({
+            top: scrollY,
+            behavior: 'smooth'
+        });
+    }
+
+    function observeIframeChanges() {
+        var iframe = document.getElementById('quiz-iframe');
+        iframe.addEventListener('load', function () {
+            var iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
+
+            iframe.contentWindow.addEventListener('click', scrollToIframeCenter);
+
+            var observer = new MutationObserver(scrollToIframeCenter);
+            observer.observe(iframeDocument.body, {
+                childList: true,
+                subtree: true,
+                attributes: true
+            });
+        });
+    }
+
+    window.addEventListener('resize', adjustIframeHeight);
+    window.addEventListener('orientationchange', adjustIframeHeight);
+    window.addEventListener('DOMContentLoaded', adjustIframeHeight);
+    window.addEventListener('DOMContentLoaded', observeIframeChanges);
+</script>
+</body>
+</html>

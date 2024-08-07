@@ -24,6 +24,7 @@ import {
     XCircle
 } from 'lucide-react';
 import axios from "axios";
+import {logEvent} from '@/lib/GAlog';
 
 const FEISHU_NOTIFY_WEBHOOK_URL = 'https://open.feishu.cn/open-apis/bot/v2/hook/f3310800-9803-4235-bc20-9557188d6d20';
 
@@ -332,10 +333,13 @@ export default function RAADSRReport() {
 
     const handlePrint = useReactToPrint({
         content: () => componentRef.current,
+        onAfterPrint: () => {
+            logEvent('click', 'RAADSRReport', 'print_report', totalScore);
+        }
     });
 
     const handlePayment = (tier: any) => {
-        // Implement actual payment logic here
+        logEvent('click', 'RAADSRReport', 'initiate_payment', totalScore);
         window.location.href = `/checkout?score=${totalScore}&package=${tier}`;
     };
 
@@ -420,6 +424,7 @@ export default function RAADSRReport() {
             const parsedScore = parseInt(scoreFromParams, 10);
             if (!isNaN(parsedScore) && parsedScore >= 0 && parsedScore <= 240) {
                 setTotalScore(parsedScore);
+                logEvent('page_view', 'RAADSRReport', 'view_report', parsedScore);
             }
         }
 
@@ -442,7 +447,10 @@ export default function RAADSRReport() {
                         const options = {timeZone: 'Asia/Shanghai', hour12: false};
                         const formattedDate = date.toLocaleString('zh-CN', options);
 
-                        notifyFeishu(`[${process.env.NEXT_PUBLIC_ENV_HINT}] ${data.session.customer_email || data.session.customer_details.email} 购买了 ${data.metadata.plan}, 回执编号 ${data.invoice.number ? data.invoice.number : "无"}, 在 ${formattedDate} 访问了购买成功页面`)
+                        notifyFeishu(`[${process.env.NEXT_PUBLIC_ENV_HINT}] ${data.session.customer_email || data.session.customer_details.email} 购买了 ${data.metadata.plan}, 回执编号 ${data.invoice.number ? data.invoice.number : "无"}, 在 ${formattedDate} 访问了购买成功页面`);
+
+                        // 记录支付成功事件
+                        logEvent('purchase', 'RAADSRReport', 'payment_success', data.metadata.score);
                     })
                     .catch(error => {
                         console.error("Failed to verify payment:", error);
@@ -458,6 +466,9 @@ export default function RAADSRReport() {
             setTimeout(() => {
                 setShowFlash(false);
             }, 6000); // 6秒后停止边框闪烁
+
+            // 记录支付取消事件
+            logEvent('purchase', 'RAADSRReport', 'payment_cancel', totalScore);
         }
 
         // Fetch user IP and send notification
@@ -510,10 +521,28 @@ export default function RAADSRReport() {
                     <p className="text-sm text-gray-600 mb-4">Evaluation Date: {new Date().toLocaleDateString()}</p>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                        <div
-                            className={`col-span-2 ${!isPaid || !(selectedTier === 'premium' || selectedTier === 'service') ? 'blur-md' : ''}`}>
-                            <h2 className="text-xl font-bold mb-2">Analysis and Interpretation</h2>
-                            <p className="mb-2">{getInterpretationDetails(totalScore)}</p>
+                        <div className="col-span-2 relative">
+                            <div
+                                className={`${!isPaid || !(selectedTier === 'premium' || selectedTier === 'service') ? 'blur-sm' : ''}`}>
+                                <h2 className="text-xl font-bold mb-2">Analysis and Interpretation</h2>
+                                <p className="mb-2">{getInterpretationDetails(totalScore)}</p>
+                            </div>
+
+                            {/* Lock icon and unlock button */}
+                            {!isPaid && (
+                                <div className="absolute inset-0 flex flex-col items-center justify-center mt-6 z-10">
+                                    <Lock className="h-16 w-16 text-blue-600 mb-4"/>
+                                    <button
+                                        className="bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition duration-300"
+                                        onClick={() => {
+                                            (purchaseRef.current as any)?.scrollIntoView({behavior: 'smooth'});
+                                            logEvent('click', 'RAADSRReport', 'unlock_full_report', totalScore);
+                                        }}
+                                    >
+                                        Unlock Full Report
+                                    </button>
+                                </div>
+                            )}
                         </div>
 
                         <div className="space-y-4">
@@ -526,7 +555,7 @@ export default function RAADSRReport() {
                     </div>
 
                     <div
-                        className={`mb-6 ${!isPaid || !(selectedTier === 'premium' || selectedTier === 'service') ? 'blur-md' : ''}`}>
+                        className={`mb-6 ${!isPaid || !(selectedTier === 'premium' || selectedTier === 'service') ? 'blur-sm' : ''}`}>
                         <h2 className="text-xl font-bold mb-2">Recommendations</h2>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             {getRecommendations(totalScore).map((recommendation, index) => (
@@ -542,7 +571,7 @@ export default function RAADSRReport() {
                     </div>
 
                     <div
-                        className={`mb-6 ${!isPaid || !(selectedTier === 'premium' || selectedTier === 'service') ? 'blur-md' : ''}`}>
+                        className={`mb-6 ${!isPaid || !(selectedTier === 'premium' || selectedTier === 'service') ? 'blur-sm' : ''}`}>
                         <h2 className="text-xl font-bold mb-2">General Advice for All</h2>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             {getGeneralAdvice().map((advice, index) => (
@@ -571,6 +600,7 @@ export default function RAADSRReport() {
                                 className="bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition duration-300"
                                 onClick={() => {
                                     (purchaseRef.current as any)?.scrollIntoView({behavior: 'smooth'});
+                                    logEvent('click', 'RAADSRReport', 'unlock_full_report', totalScore);
                                 }}
                             >
                                 Unlock Full Report
@@ -707,7 +737,7 @@ export default function RAADSRReport() {
 
                 {paymentCancelled && (
                     <div
-                        className="fixed top-0 left-0 right-0 bg-[#ffa500] text-white flex items-center justify-center">
+                        className="fixed top-0 left-0 right-0 bg-[#ffa500] text-white flex items-center justify-center z-20">
                         <div className="p-4 text-center">
                             <h2 className="text-2xl font-bold mb-4">Payment Cancelled</h2>
                             <p>Your payment was cancelled. Please choose a suitable plan to unlock your complete RAADS-R

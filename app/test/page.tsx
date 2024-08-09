@@ -2,6 +2,7 @@
 
 import React, {useEffect, useState} from 'react';
 import {useRouter} from 'next/navigation';
+import {logEvent} from '@/lib/GAlog';
 
 const questions = [
     {"id": 1, "text": "I am a sympathetic person."},
@@ -124,18 +125,21 @@ export default function QuizPage() {
     }, []);
 
     const handleAnswer = (value: number) => {
+        logEvent('click', 'Quiz', `Answered Question ${currentQuestion + 1}`, value);
         setAnswers({...answers, [currentQuestion]: value});
         setShowWarning(false);
         setShowFinalWarning(false);
     };
 
     const goToPrevious = () => {
+        logEvent('click', 'Quiz', `Previous Question ${currentQuestion + 1}`, -1);
         setCurrentQuestion(Math.max(0, currentQuestion - 1));
         setShowWarning(false);
     };
 
     const goToNext = () => {
         if (answers[currentQuestion] !== undefined) {
+            logEvent('click', 'Quiz', `Next Question ${currentQuestion + 1}`, 1);
             setCurrentQuestion(Math.min(questions.length - 1, currentQuestion + 1));
             setShowWarning(false);
         } else {
@@ -164,7 +168,7 @@ export default function QuizPage() {
             setShowFinalWarning(true);
             return;
         }
-
+        logEvent('click', 'Quiz', 'Submit Quiz', calculateScore());
         setShowNameEmail(true);
     };
 
@@ -173,8 +177,8 @@ export default function QuizPage() {
             setShowNameEmailWarning(true);
             return;
         }
-
         const totalScore = calculateScore();
+        logEvent('click', 'Quiz', 'Final Submit', totalScore);
         console.log('Submit:', answers);
         console.log('Total Score:', totalScore);
         window.open(`/?score=${totalScore}&name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}`, '_blank');

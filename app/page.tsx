@@ -13,6 +13,7 @@ import {
     ChevronDown,
     ChevronUp,
     Download,
+    Eye,
     GraduationCap,
     Heart,
     HeartPulse,
@@ -271,15 +272,25 @@ const pricingTiers = [
         title: "Premium",
         originalPrice: 38,
         price: 18,
-        features: ["Full RAADS-R Report", "3 eBooks", "One-Year AI Assistant Access"],
-    },
+        features: [
+            {
+                text: `Comprehensive Report: <strong>In-Depth Analysis & Personalized Insights</strong>`,
+                anchorName: 'report'
+            }, {
+                text: "<strong>Bonus:</strong> 3 Expert-Curated eBooks",
+                anchorName: 'ebookDetail'
+            }, {
+                text: "<strong>Exclusive Offer:</strong> One-Year AI Mental Health Assistant Access",
+                anchorName: 'aiDetail'
+            }],
+    },/*
     {
         name: "service",
         title: "Service",
         originalPrice: 1600,
         price: 800,
         features: ["Full RAADS-R Report", "3 eBooks", "One-Year AI Assistant Access", "One-Month Email Consultation Service"],
-    },
+    },*/
 ];
 
 const ebooks = [
@@ -330,6 +341,9 @@ export default function RAADSRReport() {
     const [invoiceNumber, setInvoiceNumber] = useState(null);
     const componentRef = useRef(null);
     const purchaseRef = useRef(null); // 用于滚动到购买区域
+    const reportRef = useRef(null);
+    const ebookDetailRef = useRef(null);
+    const aiDetailRef = useRef(null);
 
     const handlePrint = useReactToPrint({
         content: () => componentRef.current,
@@ -356,18 +370,16 @@ export default function RAADSRReport() {
                 <div className="grid grid-cols-1 gap-4 mt-4">
                     {ebooks.map((book, index) => (
                         <div key={index} className="p-2 border rounded">
-                            <img src={book.cover} alt={book.title}
-                                 className="w-20 md:w-32 object-cover float-left mr-2 border-black drop-shadow-md"/>
-                            <div className="flex flex-col items-end justify-between h-full">
+                            <h4 className="font-bold text-sm mb-2">{book.title}</h4>
+                            <div className="flex items-center justify-between">
+                                <img src={book.cover} alt={book.title}
+                                     className="w-20 md:w-32 object-cover float-left mr-2 border-black drop-shadow-md"/>
                                 <div>
-                                    <h4 className="font-bold text-sm">{book.title}</h4>
                                     <p
                                         className="text-xs text-gray-600"
                                         style={{whiteSpace: 'pre-wrap'}}
                                         dangerouslySetInnerHTML={{__html: book.description}}
                                     />
-                                </div>
-                                <div>
                                     <p className="amazon-price font-bold">Retail Price: <span
                                         className="text-gray-500 line-through">${book.amazonPrice}</span></p>
                                 </div>
@@ -389,27 +401,22 @@ export default function RAADSRReport() {
                     }
 
                     return (
-                        <div key={index} className="p-2 border rounded">
-                            <img src={book.cover} alt={book.title}
-                                 className="w-20 md:w-32 object-cover float-left mr-2 border-black drop-shadow-md"/>
-                            <div className="flex flex-col items-end justify-between h-full">
+                        <div key={index} className="p-2 border text-center rounded">
+                            <h4 className="font-bold text-sm mb-2">{book.title}</h4>
+                            <div className="flex items-center justify-between">
+                                <img src={book.cover} alt={book.title}
+                                     className="w-20 md:w-32 object-cover float-left mr-2 border-black drop-shadow-md"/>
                                 <div>
-                                    <h4 className="font-bold text-sm">{book.title}</h4>
                                     <p
                                         className="text-xs text-gray-600"
                                         style={{whiteSpace: 'pre-wrap'}}
                                         dangerouslySetInnerHTML={{__html: book.description}}
                                     />
+                                    <a className="mb-4 bg-blue-600 text-white px-4 py-2 rounded float-right ml-2 flex items-center"
+                                       href={book.link}>
+                                        Download
+                                    </a>
                                 </div>
-                                <a className="mb-4 bg-blue-600 text-white px-4 py-2 rounded float-right ml-2 flex items-center"
-                                   href={book.link}>
-                                    Download
-                                </a>
-                                {/*<div className="mt-4 underline">
-                                    Please check your email <em
-                                    className="font-bold">{customerEmail ? customerEmail : ''}</em> for the
-                                    download link.
-                                </div>*/}
                             </div>
                         </div>
                     );
@@ -501,7 +508,65 @@ export default function RAADSRReport() {
         <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
             <div>
 
-                <div className="w-full flex flex-wrap md:justify-end button-container">
+                {/* Payment overlay */}
+                {!selectedTier && (
+                    <div
+                        ref={purchaseRef}
+                        className="flex items-center justify-center overflow-auto mt-6">
+                        <div
+                            className="text-center p-4 sm:p-8 w-full max-w-4xl h-full">
+                            <div className="flex flex-col items-center justify-center mb-4">
+                                <div className="flex items-center space-x-4">
+                                    <Lock className="h-12 w-12 text-blue-600"/>
+                                    <h2 className="text-2xl font-bold">Unlock Report</h2>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-1 gap-4 mb-2 justify-center">
+                                {pricingTiers.map((tier, index) => (
+                                    <div key={index}
+                                         className={`border-2 rounded-lg p-4 flex flex-col justify-between mx-auto ${showFlash ? 'flash-border' : ''}`}>
+                                        <div>
+                                            <div className="mb-4">
+                                                <span className="text-2xl font-bold text-green-600">${tier.price}</span>
+                                                <span
+                                                    className="text-sm text-gray-500 line-through ml-2">${tier.originalPrice}</span>
+                                            </div>
+                                            <ul className="text-left mb-4">
+                                                {tier.features.map((feature, fIndex) => (
+                                                    <li key={fIndex} className="flex items-center mb-2">
+                                                        <Check className="h-4 w-4 mr-2 text-green-500 flex-shrink-0"/>
+                                                        <div>
+                                                        <span className="text-sm"
+                                                              dangerouslySetInnerHTML={{__html: feature.text}}/><Eye
+                                                            onClick={() => {
+                                                                const ref = {
+                                                                    report: reportRef,
+                                                                    ebookDetail: ebookDetailRef,
+                                                                    aiDetail: aiDetailRef
+                                                                }[feature.anchorName];
+                                                                (ref?.current as any)?.scrollIntoView({behavior: 'smooth'});
+                                                            }}
+                                                            className="inline-block h-4 w-4 ml-2 text-blue-500 flex-shrink-0 cursor-pointer"/>
+                                                        </div>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                        <button
+                                            onClick={() => handlePayment(tier.name as any)}
+                                            className="bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition duration-300 mt-auto"
+                                        >
+                                            Unlock
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                <div className="w-full flex flex-wrap md:justify-end button-container"
+                     ref={reportRef}>
                     <button onClick={handlePrint}
                             className={`mb-4 px-4 py-2 rounded ml-4 flex items-center ${
                                 isPaid && (selectedTier === 'premium' || selectedTier === 'service') ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-300 cursor-not-allowed'
@@ -609,63 +674,21 @@ export default function RAADSRReport() {
                     )}
                 </div>
 
-                {/* Payment overlay */}
-                {!selectedTier && (
-                    <div
-                        ref={purchaseRef}
-                        className="flex items-center justify-center overflow-auto mt-6">
-                        <div
-                            className="text-center p-4 sm:p-8 w-full max-w-4xl h-full">
-                            <Lock className="h-12 w-12 mx-auto mb-4 text-blue-600"/>
-                            <h2 className="text-2xl font-bold mb-4">Unlock Your RAADS-R Report</h2>
-                            <p className="mb-6">Choose a package to access your complete RAADS-R evaluation report and
-                                additional resources.</p>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-                                {pricingTiers.map((tier, index) => (
-                                    <div key={index}
-                                         className={`border-2 rounded-lg p-4 flex flex-col justify-between ${showFlash ? 'flash-border' : ''}`}>
-                                        <div>
-                                            <h3 className="font-bold text-lg mb-2">{tier.title}</h3>
-                                            <div className="mb-4">
-                                                <span className="text-2xl font-bold text-green-600">${tier.price}</span>
-                                                <span
-                                                    className="text-sm text-gray-500 line-through ml-2">${tier.originalPrice}</span>
-                                            </div>
-                                            <ul className="text-left mb-4">
-                                                {tier.features.map((feature, fIndex) => (
-                                                    <li key={fIndex} className="flex items-center mb-2">
-                                                        <Check className="h-4 w-4 mr-2 text-green-500 flex-shrink-0"/>
-                                                        <span className="text-sm">{feature}</span>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </div>
-                                        <button
-                                            onClick={() => handlePayment(tier.name as any)}
-                                            className="bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition duration-300 mt-auto"
-                                        >
-                                            Select
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                )}
-
                 {!selectedTier && (
                     <>
-                        <div className="flex items-center justify-center overflow-auto">
+                        <div className="flex items-center justify-center overflow-auto"
+                             ref={ebookDetailRef}>
                             <div
                                 className="text-center p-4 sm:p-8 w-full max-w-4xl h-full">
                                 <EbookPreview/>
                             </div>
                         </div>
-                        <div className="flex items-center justify-center overflow-auto">
+                        <div className="flex items-center justify-center overflow-auto"
+                             ref={aiDetailRef}>
                             <div className="text-center p-4 sm:p-8 w-full max-w-4xl h-full">
                                 <div className="mt-4 w-full">
                                     <span
-                                        className="font-bold flex ml-2">Included AI Assistant (Premium & Service Packages)</span>
+                                        className="font-bold flex ml-2">Included AI Assistant</span>
                                     <div className="grid grid-cols-1 gap-4 mt-4">
                                         <div className="p-2 border rounded">
                                             <img src="/raads_report/thumbnail/ai_assistant.png" alt="AI Assistant"
@@ -748,8 +771,7 @@ export default function RAADSRReport() {
 
                 {isPaid && (
                     <div className="font-italic text-xs text-gray-500 mt-4">
-                        <em>{invoiceNumber ? "Here is your Invoice\n" +
-                            "                        Number: " + invoiceNumber : "Payment Error"}. If you have any
+                        <em>If you have any
                             questions, please contact us at:
                             wd.gstar@gmail.com</em></div>
                 )}

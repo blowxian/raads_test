@@ -270,7 +270,7 @@ const pricingTiers = [
     {
         name: "premium",
         title: "Premium",
-        originalPrice: 198,
+        originalPrice: 98,
         price: 18,
         features: [
             {
@@ -586,7 +586,7 @@ export default function RAADSRReport() {
                                     <div>
                                         <h3 className="font-bold text-lg mb-2">Basic</h3>
                                         <div className="mb-4">
-                                            <span className="text-2xl font-bold text-green-600">$12</span>
+                                            <span className="text-2xl font-bold text-green-600">$15</span>
                                             <span
                                                 className="text-sm text-gray-500 line-through ml-2">$18</span>
                                         </div>

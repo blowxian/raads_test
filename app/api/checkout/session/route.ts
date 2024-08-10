@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
     switch (plan) {
         case 'basic':
             // priceId = 'price_1Pea9ERsqc5wnJW18S6sgHcZ';      // Test Price ID
-            priceId = 'price_1Pm5PVRsqc5wnJW12pia28Sz';
+            priceId = 'price_1Pm74JRsqc5wnJW1dAHdHPbM';
             break;
         case 'premium':
             // priceId = 'price_1Pea9ERsqc5wnJW18S6sgHcZ';      // Test Price ID

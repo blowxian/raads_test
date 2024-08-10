@@ -270,7 +270,7 @@ const pricingTiers = [
     {
         name: "premium",
         title: "Premium",
-        originalPrice: 38,
+        originalPrice: 98,
         price: 18,
         features: [
             {

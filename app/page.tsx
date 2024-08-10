@@ -282,15 +282,30 @@ const pricingTiers = [
             }, {
                 text: "<strong>Exclusive Offer:</strong> One-Year AI Mental Health Assistant Access",
                 anchorName: 'aiDetail'
-            }],
-    },/*
+            }
+        ],
+    },
     {
         name: "service",
         title: "Service",
         originalPrice: 1600,
         price: 800,
-        features: ["Full RAADS-R Report", "3 eBooks", "One-Year AI Assistant Access", "One-Month Email Consultation Service"],
-    },*/
+        features: [
+            {
+                text: `Comprehensive Report: <strong>In-Depth Analysis & Personalized Insights</strong>`,
+                anchorName: 'report'
+            }, {
+                text: "<strong>Bonus:</strong> 3 Expert-Curated eBooks",
+                anchorName: 'ebookDetail'
+            }, {
+                text: "<strong>Exclusive Offer:</strong> One-Year AI Mental Health Assistant Access",
+                anchorName: 'aiDetail'
+            }, {
+                text: "<strong>One-Month Consultation Service</strong>",
+                anchorName: 'none'
+            }
+        ],
+    },
 ];
 
 const ebooks = [
@@ -426,6 +441,8 @@ export default function RAADSRReport() {
     );
 
     useEffect(() => {
+        document.title = "Unlock RAADs-R Assessment Report";
+
         const scoreFromParams = searchParams.get('score');
         if (scoreFromParams) {
             const parsedScore = parseInt(scoreFromParams, 10);
@@ -521,11 +538,12 @@ export default function RAADSRReport() {
                                     <h2 className="text-2xl font-bold">Unlock Report</h2>
                                 </div>
                             </div>
-                            <div className="grid grid-cols-1 gap-4 mb-2 justify-center">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2 justify-center">
                                 {pricingTiers.map((tier, index) => (
                                     <div key={index}
                                          className={`border-2 rounded-lg p-4 flex flex-col justify-between mx-auto ${showFlash ? 'flash-border' : ''}`}>
                                         <div>
+                                            <h3 className="font-bold text-lg mb-2">{tier.title}</h3>
                                             <div className="mb-4">
                                                 <span className="text-2xl font-bold text-green-600">${tier.price}</span>
                                                 <span
@@ -537,16 +555,19 @@ export default function RAADSRReport() {
                                                         <Check className="h-4 w-4 mr-2 text-green-500 flex-shrink-0"/>
                                                         <div>
                                                         <span className="text-sm"
-                                                              dangerouslySetInnerHTML={{__html: feature.text}}/><Eye
-                                                            onClick={() => {
-                                                                const ref = {
-                                                                    report: reportRef,
-                                                                    ebookDetail: ebookDetailRef,
-                                                                    aiDetail: aiDetailRef
-                                                                }[feature.anchorName];
-                                                                (ref?.current as any)?.scrollIntoView({behavior: 'smooth'});
-                                                            }}
-                                                            className="inline-block h-4 w-4 ml-2 text-blue-500 flex-shrink-0 cursor-pointer"/>
+                                                              dangerouslySetInnerHTML={{__html: feature.text}}/>{feature.anchorName !== 'none' &&
+                                                            <Eye
+                                                                onClick={() => {
+                                                                    if (feature.anchorName === 'none')
+                                                                        return;
+                                                                    const ref = {
+                                                                        report: reportRef,
+                                                                        ebookDetail: ebookDetailRef,
+                                                                        aiDetail: aiDetailRef
+                                                                    }[feature.anchorName];
+                                                                    (ref?.current as any)?.scrollIntoView({behavior: 'smooth'});
+                                                                }}
+                                                                className="inline-block h-4 w-4 ml-2 text-blue-500 flex-shrink-0 cursor-pointer"/>}
                                                         </div>
                                                     </li>
                                                 ))}
@@ -560,6 +581,35 @@ export default function RAADSRReport() {
                                         </button>
                                     </div>
                                 ))}
+                                <div
+                                    className={`border-2 rounded-lg p-4 md:col-span-2 flex flex-col justify-between mx-auto ${showFlash ? 'flash-border' : ''}`}>
+                                    <div>
+                                        <h3 className="font-bold text-lg mb-2">Basic</h3>
+                                        <div className="mb-4">
+                                            <span className="text-2xl font-bold text-green-600">$12</span>
+                                            <span
+                                                className="text-sm text-gray-500 line-through ml-2">$18</span>
+                                        </div>
+                                        <ul className="text-left mb-4">
+                                            <li className="flex items-center mb-2">
+                                                <Check className="h-4 w-4 mr-2 text-green-500 flex-shrink-0"/>
+                                                <div>
+                                                    <span className="text-sm">Comprehensive Report: <strong>In-Depth Analysis & Personalized Insights</strong></span><Eye
+                                                    onClick={() => {
+                                                        (reportRef?.current as any)?.scrollIntoView({behavior: 'smooth'});
+                                                    }}
+                                                    className="inline-block h-4 w-4 ml-2 text-blue-500 flex-shrink-0 cursor-pointer"/>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <button
+                                        onClick={() => handlePayment("basic")}
+                                        className="bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition duration-300 mt-auto"
+                                    >
+                                        Unlock
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -569,10 +619,10 @@ export default function RAADSRReport() {
                      ref={reportRef}>
                     <button onClick={handlePrint}
                             className={`mb-4 px-4 py-2 rounded ml-4 flex items-center ${
-                                isPaid && (selectedTier === 'premium' || selectedTier === 'service') ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-300 cursor-not-allowed'
-                            }`} disabled={!(isPaid && (selectedTier === 'premium' || selectedTier === 'service'))}>
+                                isPaid ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-300 cursor-not-allowed'
+                            }`} disabled={!isPaid}>
 
-                        {isPaid && (selectedTier === 'premium' || selectedTier === 'service') ? (
+                        {isPaid ? (
                             <Download className="mr-2 text-white"/>
                         ) : (
                             <XCircle className="mr-2 text-gray-300"/>
@@ -588,7 +638,7 @@ export default function RAADSRReport() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                         <div className="col-span-2 relative">
                             <div
-                                className={`${!isPaid || !(selectedTier === 'premium' || selectedTier === 'service') ? 'blur-sm' : ''}`}>
+                                className={`${!isPaid ? 'blur-sm' : ''}`}>
                                 <h2 className="text-xl font-bold mb-2">Analysis and Interpretation</h2>
                                 <p className="mb-2">{getInterpretationDetails(totalScore)}</p>
                             </div>
@@ -620,7 +670,7 @@ export default function RAADSRReport() {
                     </div>
 
                     <div
-                        className={`mb-6 ${!isPaid || !(selectedTier === 'premium' || selectedTier === 'service') ? 'blur-sm' : ''}`}>
+                        className={`mb-6 ${!isPaid ? 'blur-sm' : ''}`}>
                         <h2 className="text-xl font-bold mb-2">Recommendations</h2>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             {getRecommendations(totalScore).map((recommendation, index) => (
@@ -636,7 +686,7 @@ export default function RAADSRReport() {
                     </div>
 
                     <div
-                        className={`mb-6 ${!isPaid || !(selectedTier === 'premium' || selectedTier === 'service') ? 'blur-sm' : ''}`}>
+                        className={`mb-6 ${!isPaid ? 'blur-sm' : ''}`}>
                         <h2 className="text-xl font-bold mb-2">General Advice for All</h2>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             {getGeneralAdvice().map((advice, index) => (
@@ -722,7 +772,7 @@ export default function RAADSRReport() {
                 )}
 
 
-                {selectedTier && (
+                {(selectedTier === 'premium' || selectedTier === 'service') && (
                     <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-4xl mt-4" id="EBook">
                         <h1 className="text-2xl font-bold mb-4">E-Book</h1>
                         <div className={!isPaid ? 'blur-md' : ''}>

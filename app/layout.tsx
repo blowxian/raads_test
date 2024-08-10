@@ -4,8 +4,8 @@ import Script from "next/script";
 import {Suspense} from 'react'
 
 export const metadata: Metadata = {
-    title: "RAADS-R Assessment Report | Autism Evaluation Results",
-    description: "Detailed RAADS-R assessment report providing insights into autism spectrum traits and recommendations for further steps. Ensure data privacy and get professional advice.",
+    title: "RAADs-R TEST",
+    description: "The Ritvo Autism Asperger Diagnostic Scale-Revised (RAADS-R) is a tool used to assist the diagnosis of autism spectrum disorders in adults.",
     icons: {
         icon: '/raads_report/favicon-32x32.png',
         shortcut: '/raads_report/favicon.ico',

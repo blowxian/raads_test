@@ -5,22 +5,23 @@ import React, {useEffect, useRef} from 'react';
 
 const CheckoutPage: React.FC = () => {
     const formRef = useRef<HTMLFormElement>(null as any);
-    const scoreRef = useRef<HTMLInputElement>(null as any);  // 创建 ref 用于隐藏的用户 ID 输入框
-    const planRef = useRef<HTMLInputElement>(null as any);    // 创建 ref 用于隐藏的 plan 输入框
+    const scoreRef = useRef<HTMLInputElement>(null as any);
+    const planRef = useRef<HTMLInputElement>(null as any);
+    const couponRef = useRef<HTMLInputElement>(null as any);
 
     useEffect(() => {
-        // 获取 URL 中的 score、plan 和 coupon 参数
         const queryParams = new URLSearchParams(window.location.search);
         const score = queryParams.get('score');
         const plan = queryParams.get('package');
+        const coupon = queryParams.get('coupon');
 
-        // 在隐藏的输入字段中设置用户 ID、plan 和优惠券
-        if (scoreRef.current && planRef.current) {
+        if (scoreRef.current && planRef.current && couponRef.current) {
             scoreRef.current.value = score || '';
             planRef.current.value = plan || '';
+            couponRef.current.value = coupon || '';
         }
 
-        // 在组件加载时自动提交表单
+        // 自动提交表单
         if (formRef.current) {
             formRef.current.submit();
         }
@@ -34,6 +35,7 @@ const CheckoutPage: React.FC = () => {
             <form ref={formRef} action="/api/checkout/session" method="POST" style={{display: 'none'}}>
                 <input type="hidden" ref={scoreRef} name="score"/>
                 <input type="hidden" ref={planRef} name="plan"/>
+                <input type="hidden" ref={couponRef} name="coupon"/>
                 <button type="submit" role="link">Checkout</button>
             </form>
             <style jsx>{`

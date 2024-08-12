@@ -23,6 +23,7 @@ export async function POST(req: NextRequest) {
 
     const score = formData.get('score') ? Number(formData.get('score')) : undefined;
     const plan = formData.get('plan')?.toString();
+    const couponCode = formData.get('coupon')?.toString(); // 新增：获取优惠券代码
 
     // 获取客户端 IP 地址
     const ip = req.headers.get('x-forwarded-for') || req.ip || 'IP not found';
@@ -44,7 +45,8 @@ export async function POST(req: NextRequest) {
             break;
         case 'premium':
             // priceId = 'price_1Pea9ERsqc5wnJW18S6sgHcZ';      // Test Price ID
-            priceId = 'price_1PkP2uRsqc5wnJW1H00EWgPH';
+            // priceId = 'price_1PkP2uRsqc5wnJW1H00EWgPH';
+            priceId = 'price_1Pmr41Rsqc5wnJW12ZXcZlhd';
             break;
         case 'service':
             // priceId = 'price_1Pea9ERsqc5wnJW18S6sgHcZ';      // Test Price ID
@@ -56,24 +58,34 @@ export async function POST(req: NextRequest) {
 
     try {
         // 创建 Checkout 会话
-        const session = await stripe.checkout.sessions.create({
+        const sessionOptions: Stripe.Checkout.SessionCreateParams = {
             line_items: [
                 {
                     price: priceId,
                     quantity: 1,
                 },
             ],
-            // mode: 'subscription',
             mode: 'payment',
             success_url: `${req.headers.get('origin')}?score=${score}&status=success&session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `${req.headers.get('origin')}?score=${score}&status=cancel`,
             automatic_tax: {enabled: true},
             metadata: {
-                score: score,  // 将 userId 添加到 metadata 中
-                plan: plan  // 可选: 将 plan 添加到 metadata 中以跟踪
+                score: score,
+                plan: plan
             }
-        } as any);
-        return NextResponse.redirect(session.url as any, 303);
+        } as any;
+
+        // 如果提供了优惠券代码，添加到会话选项中
+        if (couponCode) {
+            sessionOptions.discounts = [
+                {
+                    coupon: couponCode,
+                },
+            ];
+        }
+
+        const session = await stripe.checkout.sessions.create(sessionOptions);
+        return NextResponse.redirect(session.url as string, 303);
     } catch (err: any) {
         return NextResponse.json({error: err.message});
     }

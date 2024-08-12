@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import axios from "axios";
 import {logEvent} from '@/lib/GAlog';
+import MarketingPopup from "@/components/MarketingPopup";
 
 const FEISHU_NOTIFY_WEBHOOK_URL = 'https://open.feishu.cn/open-apis/bot/v2/hook/f4c87354-47b7-4ad1-83ff-a56962dc83a1';
 
@@ -271,7 +272,7 @@ const pricingTiers = [
         name: "premium",
         title: "Premium",
         originalPrice: 98,
-        price: 18,
+        price: 38,
         features: [
             {
                 text: `Comprehensive Report: <strong>In-Depth Analysis & Personalized Insights</strong>`,
@@ -367,9 +368,9 @@ export default function RAADSRReport() {
         }
     });
 
-    const handlePayment = (tier: any) => {
+    const handlePayment = (tier: string, coupon = "") => {
         logEvent('click', 'RAADSRReport', 'initiate_payment', totalScore);
-        window.location.href = `/checkout?score=${totalScore}&package=${tier}`;
+        window.location.href = `/checkout?score=${totalScore}&package=${tier}` + (coupon ? '&coupon=' + coupon : '');
     };
 
     const EbookPreview = () => (
@@ -525,96 +526,6 @@ export default function RAADSRReport() {
         <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
             <div>
 
-                {/* Payment overlay */}
-                {!selectedTier && (
-                    <div
-                        ref={purchaseRef}
-                        className="flex items-center justify-center overflow-auto mt-6">
-                        <div
-                            className="text-center p-4 sm:p-8 w-full max-w-4xl h-full">
-                            <div className="flex flex-col items-center justify-center mb-4">
-                                <div className="flex items-center space-x-4">
-                                    <Lock className="h-12 w-12 text-blue-600"/>
-                                    <h2 className="text-2xl font-bold">Unlock Report</h2>
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2 justify-center">
-                                {pricingTiers.map((tier, index) => (
-                                    <div key={index}
-                                         className={`border-2 rounded-lg p-4 flex flex-col justify-between mx-auto ${showFlash ? 'flash-border' : ''}`}>
-                                        <div>
-                                            <h3 className="font-bold text-lg mb-2">{tier.title}</h3>
-                                            <div className="mb-4">
-                                                <span className="text-2xl font-bold text-green-600">${tier.price}</span>
-                                                <span
-                                                    className="text-sm text-gray-500 line-through ml-2">${tier.originalPrice}</span>
-                                            </div>
-                                            <ul className="text-left mb-4">
-                                                {tier.features.map((feature, fIndex) => (
-                                                    <li key={fIndex} className="flex items-center mb-2">
-                                                        <Check className="h-4 w-4 mr-2 text-green-500 flex-shrink-0"/>
-                                                        <div>
-                                                        <span className="text-sm"
-                                                              dangerouslySetInnerHTML={{__html: feature.text}}/>{feature.anchorName !== 'none' &&
-                                                            <Eye
-                                                                onClick={() => {
-                                                                    if (feature.anchorName === 'none')
-                                                                        return;
-                                                                    const ref = {
-                                                                        report: reportRef,
-                                                                        ebookDetail: ebookDetailRef,
-                                                                        aiDetail: aiDetailRef
-                                                                    }[feature.anchorName];
-                                                                    (ref?.current as any)?.scrollIntoView({behavior: 'smooth'});
-                                                                }}
-                                                                className="inline-block h-4 w-4 ml-2 text-blue-500 flex-shrink-0 cursor-pointer"/>}
-                                                        </div>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </div>
-                                        <button
-                                            onClick={() => handlePayment(tier.name as any)}
-                                            className="bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition duration-300 mt-auto"
-                                        >
-                                            Unlock
-                                        </button>
-                                    </div>
-                                ))}
-                                <div
-                                    className={`border-2 rounded-lg p-4 md:col-span-2 flex flex-col justify-between mx-auto ${showFlash ? 'flash-border' : ''}`}>
-                                    <div>
-                                        <h3 className="font-bold text-lg mb-2">Basic</h3>
-                                        <div className="mb-4">
-                                            <span className="text-2xl font-bold text-green-600">$15</span>
-                                            <span
-                                                className="text-sm text-gray-500 line-through ml-2">$18</span>
-                                        </div>
-                                        <ul className="text-left mb-4">
-                                            <li className="flex items-center mb-2">
-                                                <Check className="h-4 w-4 mr-2 text-green-500 flex-shrink-0"/>
-                                                <div>
-                                                    <span className="text-sm">Comprehensive Report: <strong>In-Depth Analysis & Personalized Insights</strong></span><Eye
-                                                    onClick={() => {
-                                                        (reportRef?.current as any)?.scrollIntoView({behavior: 'smooth'});
-                                                    }}
-                                                    className="inline-block h-4 w-4 ml-2 text-blue-500 flex-shrink-0 cursor-pointer"/>
-                                                </div>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                    <button
-                                        onClick={() => handlePayment("basic")}
-                                        className="bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition duration-300 mt-auto"
-                                    >
-                                        Unlock
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
                 <div className="w-full flex flex-wrap md:justify-end button-container"
                      ref={reportRef}>
                     <button onClick={handlePrint}
@@ -724,6 +635,96 @@ export default function RAADSRReport() {
                     )}
                 </div>
 
+                {/* Payment overlay */}
+                {!selectedTier && (
+                    <div
+                        ref={purchaseRef}
+                        className="flex items-center justify-center overflow-auto mt-6">
+                        <div
+                            className="text-center p-4 sm:p-8 w-full max-w-4xl h-full">
+                            <div className="flex flex-col items-center justify-center mb-4">
+                                <div className="flex items-center space-x-4">
+                                    <Lock className="h-12 w-12 text-blue-600"/>
+                                    <h2 className="text-2xl font-bold">Unlock Report</h2>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2 justify-center">
+                                {pricingTiers.map((tier, index) => (
+                                    <div key={index}
+                                         className={`border-2 rounded-lg p-4 flex flex-col justify-between mx-auto ${showFlash ? 'flash-border' : ''}`}>
+                                        <div>
+                                            <h3 className="font-bold text-lg mb-2">{tier.title}</h3>
+                                            <div className="mb-4">
+                                                <span className="text-2xl font-bold text-green-600">${tier.price}</span>
+                                                <span
+                                                    className="text-sm text-gray-500 line-through ml-2">${tier.originalPrice}</span>
+                                            </div>
+                                            <ul className="text-left mb-4">
+                                                {tier.features.map((feature, fIndex) => (
+                                                    <li key={fIndex} className="flex items-center mb-2">
+                                                        <Check className="h-4 w-4 mr-2 text-green-500 flex-shrink-0"/>
+                                                        <div>
+                                                        <span className="text-sm"
+                                                              dangerouslySetInnerHTML={{__html: feature.text}}/>{feature.anchorName !== 'none' &&
+                                                            <Eye
+                                                                onClick={() => {
+                                                                    if (feature.anchorName === 'none')
+                                                                        return;
+                                                                    const ref = {
+                                                                        report: reportRef,
+                                                                        ebookDetail: ebookDetailRef,
+                                                                        aiDetail: aiDetailRef
+                                                                    }[feature.anchorName];
+                                                                    (ref?.current as any)?.scrollIntoView({behavior: 'smooth'});
+                                                                }}
+                                                                className="inline-block h-4 w-4 ml-2 text-blue-500 flex-shrink-0 cursor-pointer"/>}
+                                                        </div>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                        <button
+                                            onClick={() => handlePayment(tier.name as any)}
+                                            className="bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition duration-300 mt-auto"
+                                        >
+                                            Unlock
+                                        </button>
+                                    </div>
+                                ))}
+                                <div
+                                    className={`border-2 rounded-lg p-4 md:col-span-2 flex flex-col justify-between mx-auto ${showFlash ? 'flash-border' : ''}`}>
+                                    <div>
+                                        <h3 className="font-bold text-lg mb-2">Basic</h3>
+                                        <div className="mb-4">
+                                            <span className="text-2xl font-bold text-green-600">$15</span>
+                                            <span
+                                                className="text-sm text-gray-500 line-through ml-2">$18</span>
+                                        </div>
+                                        <ul className="text-left mb-4">
+                                            <li className="flex items-center mb-2">
+                                                <Check className="h-4 w-4 mr-2 text-green-500 flex-shrink-0"/>
+                                                <div>
+                                                    <span className="text-sm">Comprehensive Report: <strong>In-Depth Analysis & Personalized Insights</strong></span><Eye
+                                                    onClick={() => {
+                                                        (reportRef?.current as any)?.scrollIntoView({behavior: 'smooth'});
+                                                    }}
+                                                    className="inline-block h-4 w-4 ml-2 text-blue-500 flex-shrink-0 cursor-pointer"/>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <button
+                                        onClick={() => handlePayment("basic")}
+                                        className="bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition duration-300 mt-auto"
+                                    >
+                                        Unlock
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {!selectedTier && (
                     <>
                         <div className="flex items-center justify-center overflow-auto"
@@ -826,6 +827,7 @@ export default function RAADSRReport() {
                             wd.gstar@gmail.com</em></div>
                 )}
             </div>
+            <MarketingPopup handlePayment={handlePayment} isPaid={isPaid}/>
         </div>
     );
 }

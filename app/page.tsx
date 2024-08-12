@@ -27,6 +27,13 @@ import {
 import axios from "axios";
 import {logEvent} from '@/lib/GAlog';
 import MarketingPopup from "@/components/MarketingPopup";
+import Cookies from "js-cookie";
+import dynamic from "next/dynamic";
+
+const ScoreCharts = dynamic(() => import('@/components/ScoreCharts'), {
+    ssr: false,
+    loading: () => <p>Loading charts...</p>
+});
 
 const FEISHU_NOTIFY_WEBHOOK_URL = 'https://open.feishu.cn/open-apis/bot/v2/hook/f4c87354-47b7-4ad1-83ff-a56962dc83a1';
 
@@ -348,7 +355,14 @@ const ebooks = [
 export default function RAADSRReport() {
     const searchParams = useSearchParams();
     const [totalScore, setTotalScore] = useState(0);
+    const [scores, setScores] = useState({
+        socialRelatedness: 0,
+        circumscribedInterests: 0,
+        language: 0,
+        sensoryMotor: 0
+    });
     const [isPaid, setIsPaid] = useState(false);
+    const [hasDetailedScores, setHasDetailedScores] = useState(false);
     const [selectedTier, setSelectedTier] = useState(null);
     const [showEbooks, setShowEbooks] = useState(true);
     const [paymentCancelled, setPaymentCancelled] = useState(false);
@@ -453,6 +467,21 @@ export default function RAADSRReport() {
             }
         }
 
+        // Load scores from cookies
+        const cookieScores = Cookies.get('scores');
+        if (cookieScores) {
+            try {
+                const parsedScores = JSON.parse(cookieScores);
+                setScores(parsedScores);
+                setHasDetailedScores(true);
+            } catch (error) {
+                console.error('Failed to parse scores from cookie:', error);
+                setHasDetailedScores(false);
+            }
+        } else {
+            setHasDetailedScores(false);
+        }
+
         const paymentStatus = searchParams.get('status');
         if (paymentStatus === 'success') {
             // verify payment status
@@ -548,8 +577,15 @@ export default function RAADSRReport() {
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                         <div className="col-span-2 relative">
+                            {hasDetailedScores ? (
+                                <div className={`${!isPaid ? 'blur-sm' : ''}`}>
+                                    <h2 className="text-xl font-bold mb-2">RAADS-R Visualization</h2>
+                                    <ScoreCharts scores={scores}/>
+                                </div>
+                            ) : null}
+
                             <div
-                                className={`${!isPaid ? 'blur-sm' : ''}`}>
+                                className={`p-4 ${!isPaid ? 'blur-sm' : ''}`}>
                                 <h2 className="text-xl font-bold mb-2">Analysis and Interpretation</h2>
                                 <p className="mb-2">{getInterpretationDetails(totalScore)}</p>
                             </div>

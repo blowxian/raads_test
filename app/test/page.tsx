@@ -3,6 +3,7 @@
 import React, {useEffect, useState} from 'react';
 import {useRouter} from 'next/navigation';
 import {logEvent} from '@/lib/GAlog';
+import Cookies from 'js-cookie';
 
 const questions = [
     {"id": 1, "text": "I am a sympathetic person."},
@@ -147,19 +148,47 @@ export default function QuizPage() {
         }
     };
 
+    const dimensionQuestions = {
+        socialRelatedness: [1, 6, 8, 11, 14, 17, 18, 25, 37, 38, 3, 5, 12, 28, 39, 44, 45, 76, 79, 80, 20, 21, 22, 23, 26, 31, 43, 47, 48, 53, 54, 55, 60, 61, 64, 68, 69, 72, 77],
+        circumscribedInterests: [9, 13, 24, 30, 32, 40, 41, 50, 52, 56, 63, 70, 75, 78],
+        language: [2, 7, 27, 35, 58, 66, 15],
+        sensoryMotor: [10, 19, 4, 33, 34, 36, 46, 71, 16, 29, 42, 49, 51, 57, 59, 62, 65, 67, 73, 74]
+    };
+
     const calculateScore = () => {
         let totalScore = 0;
+        let scores = {
+            socialRelatedness: 0,
+            circumscribedInterests: 0,
+            language: 0,
+            sensoryMotor: 0
+        };
+
         questions.forEach((question, index) => {
             const answer = answers[index];
             if (answer !== undefined) {
+                // 计算总分
                 if (starQuestions.includes(question.id)) {
                     totalScore += scoreMap["non-symptom"][answer];
                 } else {
                     totalScore += scoreMap["symptom"][answer];
                 }
+
+                // 计算各个维度的分数
+                const dimensionKey = Object.keys(dimensionQuestions).find(dimension =>
+                    (dimensionQuestions as any)[dimension].includes(question.id)
+                );
+                if (dimensionKey) {
+                    if (starQuestions.includes(question.id)) {
+                        (scores as any)[dimensionKey] += scoreMap["non-symptom"][answer];
+                    } else {
+                        (scores as any)[dimensionKey] += scoreMap["symptom"][answer];
+                    }
+                }
             }
         });
-        return totalScore;
+
+        return {totalScore, scores};
     };
 
     const handleSubmit = () => {
@@ -168,7 +197,7 @@ export default function QuizPage() {
             setShowFinalWarning(true);
             return;
         }
-        logEvent('click', 'Quiz', 'Submit Quiz', calculateScore());
+        logEvent('click', 'Quiz', 'Submit Quiz', calculateScore().totalScore);
         setShowNameEmail(true);
     };
 
@@ -177,11 +206,17 @@ export default function QuizPage() {
             setShowNameEmailWarning(true);
             return;
         }
-        const totalScore = calculateScore();
-        logEvent('click', 'Quiz', 'Final Submit', totalScore);
+        const scores = calculateScore();
+        logEvent('click', 'Quiz', 'Final Submit', scores.totalScore);
+
+        // 将 scores.totalScore 和各维度的分数存储到 cookie 中
+        Cookies.set('totalScore', (scores as any).totalScore, {expires: 7});
+        Cookies.set('scores', JSON.stringify(scores.scores), {expires: 7});
+
         console.log('Submit:', answers);
-        console.log('Total Score:', totalScore);
-        window.open(`/?score=${totalScore}&name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}`, '_blank');
+        console.log('Total Score:', scores.totalScore);
+        console.log('Scores: ', scores.scores)
+        window.open(`/?score=${scores.totalScore}&name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}`, '_blank');
         setTestComplete(true);
     };
 

@@ -1,10 +1,29 @@
 import React, {useEffect, useState} from 'react';
-import {ChevronUp, DollarSign, X} from 'lucide-react';
+import {Check, ChevronUp, DollarSign, X} from 'lucide-react';
 
 const MarketingPopup = ({handlePayment, isPaid = false}: any) => {
     const [showPopup, setShowPopup] = useState(false);
     const [showMinimized, setShowMinimized] = useState(false);
     const [timeLeft, setTimeLeft] = useState(3600); // 1 hour in seconds
+
+    const premiumPlan = {
+        name: "premium",
+        title: "Premium",
+        originalPrice: 98,
+        price: 18,
+        features: [
+            {
+                text: `Comprehensive Report: <strong>In-Depth Analysis & Personalized Insights</strong>`,
+                anchorName: 'report'
+            }, {
+                text: "<strong>Bonus:</strong> 3 Expert-Curated eBooks",
+                anchorName: 'ebookDetail'
+            }, {
+                text: "<strong>Exclusive Offer:</strong> One-Year AI Mental Health Assistant Access",
+                anchorName: 'aiDetail'
+            }
+        ],
+    };
 
     useEffect(() => {
         if (!isPaid) {
@@ -38,36 +57,55 @@ const MarketingPopup = ({handlePayment, isPaid = false}: any) => {
     };
 
     if (isPaid) {
-        return null; // 如果已支付，不渲染任何内容
+        return null;
     }
+
+    const discountPercentage = Math.round((1 - premiumPlan.price / premiumPlan.originalPrice) * 100);
 
     return (
         <>
             {showPopup && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
                     <div
-                        className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg p-6 max-w-sm w-full shadow-2xl">
+                        className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg p-6 max-w-md w-full shadow-2xl">
                         <button onClick={handleClose} className="absolute top-2 right-2 text-white hover:text-gray-200">
                             <X size={24}/>
                         </button>
                         <div className="text-center">
-                            <h2 className="text-3xl font-extrabold text-white mb-4 font-sans">Exclusive Offer!</h2>
+                            <h2 className="text-3xl font-extrabold text-white mb-4 font-sans">Limited Time Offer!</h2>
                             <div
                                 className="bg-yellow-300 text-blue-800 font-bold py-2 px-4 rounded-full inline-block mb-4 transform -rotate-2 shadow-md">
                                 <DollarSign className="inline-block mr-1" size={20}/>
-                                <span className="text-2xl">20 OFF</span>
+                                <span className="text-2xl">{discountPercentage}% OFF</span>
                             </div>
                             <p className="text-white text-lg mb-6 font-sans">
-                                Unlock the full potential of your RAADS-R report with our Premium plan!
+                                Transform your understanding with our {premiumPlan.title} RAADS-R report!
                             </p>
+                            <div className="bg-white rounded-lg p-4 mb-6 text-left">
+                                <h3 className="text-blue-600 font-bold mb-2">Premium Package Includes:</h3>
+                                <ul className="space-y-2">
+                                    {premiumPlan.features.map((feature, index) => (
+                                        <li key={index} className="flex items-start">
+                                            <Check size={20} className="text-green-500 mr-2 flex-shrink-0 mt-1"/>
+                                            <span dangerouslySetInnerHTML={{__html: feature.text}}/>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                            <div className="mb-6">
+                                <p className="text-yellow-300 text-xl font-bold">
+                                    <span className="line-through">${premiumPlan.originalPrice}</span>
+                                    <span className="ml-2 text-white text-3xl">${premiumPlan.price}</span>
+                                </p>
+                            </div>
                             <button
                                 onClick={() => handlePayment('premium', "EYsVBfUA")}
                                 className="bg-white text-blue-600 font-bold py-3 px-6 rounded-full hover:bg-blue-100 transition duration-300 shadow-lg text-lg"
                             >
-                                Claim Your Discount
+                                Unlock Premium Now
                             </button>
                             <p className="mt-4 text-sm text-yellow-200 font-semibold">
-                                Hurry! Offer ends in: <span className="font-mono">{formatTime(timeLeft)}</span>
+                                Hurry! Offer expires in: <span className="font-mono">{formatTime(timeLeft)}</span>
                             </p>
                         </div>
                     </div>
@@ -80,8 +118,17 @@ const MarketingPopup = ({handlePayment, isPaid = false}: any) => {
                     <button className="absolute top-1 right-1 text-white hover:text-gray-200">
                         <ChevronUp size={20}/>
                     </button>
-                    <p className="text-sm font-bold mb-1">$20 OFF Premium</p>
-                    <p className="text-xs">Ends in: <span className="font-mono">{formatTime(timeLeft)}</span></p>
+                    <div className="mb-2">
+                        <p className="text-lg font-bold">Premium RAADS-R Report</p>
+                        <p className="text-sm">{discountPercentage}% OFF - Now Only ${premiumPlan.price}</p>
+                    </div>
+                    <ul className="text-xs space-y-1 mb-2">
+                        <li>• Personalized Insights</li>
+                        <li>• Expert eBooks</li>
+                        <li>• AI Assistant Access</li>
+                    </ul>
+                    <p className="text-xs font-semibold">Ends in: <span
+                        className="font-mono">{formatTime(timeLeft)}</span></p>
                 </div>
             )}
         </>

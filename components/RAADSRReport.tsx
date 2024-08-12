@@ -545,73 +545,52 @@ export default function RAADSRReport() {
     }, [searchParams]);
 
     const [shareError, setShareError] = useState('');
-    const [isGeneratingImage, setIsGeneratingImage] = useState(false);
-
-
-    const generateShareImage = async () => {
-        setIsGeneratingImage(true);
-        try {
-            const response = await fetch('/api/generate-share-image', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    score: totalScore,
-                    interpretation: getInterpretation(totalScore)
-                }),
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to generate share image');
-            }
-
-            const data = await response.json();
-            return data.imageUrl;
-        } catch (error) {
-            console.error('Error generating share image:', error);
-            setShareError('Failed to generate share image. Please try again.');
-            return null;
-        } finally {
-            setIsGeneratingImage(false);
-        }
-    };
 
     const handleTwitterShare = () => {
         try {
-            console.log('Attempting to share on Twitter...'); // 调试日志
+            console.log('Attempting to share on Twitter...');
             const text = `My RAADS-R TEST score is ${totalScore}. ${getInterpretation(totalScore)}`;
-            const url = 'https://raadstest.com'; // 请确保替换为您的实际网站 URL
+            const url = 'https://raadstest.com';
             const hashtags = 'RAADSR,AutismAwareness';
             const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}&hashtags=${hashtags}`;
             const newWindow = window.open(twitterUrl, '_blank');
             if (newWindow) {
                 newWindow.opener = null;
+                // 记录成功的分享事件
+                logEvent('share', 'RAADSRReport', 'share_twitter_success', totalScore);
             } else {
                 setShareError('Popup blocked. Please allow popups for this site.');
+                // 记录失败的分享事件
+                logEvent('share', 'RAADSRReport', 'share_twitter_blocked', totalScore);
             }
-            logEvent('share', 'RAADSRReport', 'share_twitter', totalScore);
         } catch (error) {
             console.error('Error sharing to Twitter:', error);
             setShareError('An error occurred while sharing. Please try again.');
+            // 记录错误的分享事件
+            logEvent('share', 'RAADSRReport', 'share_twitter_error', totalScore);
         }
     };
 
     const handleFacebookShare = () => {
         try {
-            console.log('Attempting to share on Facebook...'); // 调试日志
-            const url = 'https://raadstest.com'; // 请确保替换为您的实际网站 URL
+            console.log('Attempting to share on Facebook...');
+            const url = 'https://raadstest.com';
             const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
             const newWindow = window.open(facebookUrl, '_blank');
             if (newWindow) {
                 newWindow.opener = null;
+                // 记录成功的分享事件
+                logEvent('share', 'RAADSRReport', 'share_facebook_success', totalScore);
             } else {
                 setShareError('Popup blocked. Please allow popups for this site.');
+                // 记录失败的分享事件
+                logEvent('share', 'RAADSRReport', 'share_facebook_blocked', totalScore);
             }
-            logEvent('share', 'RAADSRReport', 'share_facebook', totalScore);
         } catch (error) {
             console.error('Error sharing to Facebook:', error);
             setShareError('An error occurred while sharing. Please try again.');
+            // 记录错误的分享事件
+            logEvent('share', 'RAADSRReport', 'share_facebook_error', totalScore);
         }
     };
 
@@ -690,7 +669,6 @@ export default function RAADSRReport() {
                                         <Facebook size={20}/>
                                     </button>
                                 </div>
-                                {isGeneratingImage && <p>Generating share image...</p>}
                                 {shareError && (
                                     <p className="text-red-500 text-sm mt-2">{shareError}</p>
                                 )}

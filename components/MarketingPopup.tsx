@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {ChevronUp, DollarSign, X} from 'lucide-react';
 
-const MarketingPopup = ({handlePayment, isPaid = false}) => {
+const MarketingPopup = ({handlePayment, isPaid = false}: any) => {
     const [showPopup, setShowPopup] = useState(false);
     const [showMinimized, setShowMinimized] = useState(false);
     const [timeLeft, setTimeLeft] = useState(3600); // 1 hour in seconds
@@ -31,7 +31,7 @@ const MarketingPopup = ({handlePayment, isPaid = false}) => {
         setShowMinimized(true);
     };
 
-    const formatTime = (seconds) => {
+    const formatTime = (seconds: number) => {
         const minutes = Math.floor(seconds / 60);
         const remainingSeconds = seconds % 60;
         return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;

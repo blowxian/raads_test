@@ -294,23 +294,14 @@ const pricingTiers = [
         ],
     },
     {
-        name: "service",
-        title: "Service",
-        originalPrice: 1600,
-        price: 800,
+        name: "basic",
+        title: "Basic",
+        originalPrice: 18,
+        price: 15,
         features: [
             {
                 text: `Comprehensive Report: <strong>In-Depth Analysis & Personalized Insights</strong>`,
                 anchorName: 'report'
-            }, {
-                text: "<strong>Bonus:</strong> 3 Expert-Curated eBooks",
-                anchorName: 'ebookDetail'
-            }, {
-                text: "<strong>Exclusive Offer:</strong> One-Year AI Mental Health Assistant Access",
-                anchorName: 'aiDetail'
-            }, {
-                text: "<strong>One-Month Consultation Service</strong>",
-                anchorName: 'none'
             }
         ],
     },
@@ -727,35 +718,6 @@ export default function RAADSRReport() {
                                         </button>
                                     </div>
                                 ))}
-                                <div
-                                    className={`border-2 rounded-lg p-4 md:col-span-2 flex flex-col justify-between mx-auto ${showFlash ? 'flash-border' : ''}`}>
-                                    <div>
-                                        <h3 className="font-bold text-lg mb-2">Basic</h3>
-                                        <div className="mb-4">
-                                            <span className="text-2xl font-bold text-green-600">$15</span>
-                                            <span
-                                                className="text-sm text-gray-500 line-through ml-2">$18</span>
-                                        </div>
-                                        <ul className="text-left mb-4">
-                                            <li className="flex items-center mb-2">
-                                                <Check className="h-4 w-4 mr-2 text-green-500 flex-shrink-0"/>
-                                                <div>
-                                                    <span className="text-sm">Comprehensive Report: <strong>In-Depth Analysis & Personalized Insights</strong></span><Eye
-                                                    onClick={() => {
-                                                        (reportRef?.current as any)?.scrollIntoView({behavior: 'smooth'});
-                                                    }}
-                                                    className="inline-block h-4 w-4 ml-2 text-blue-500 flex-shrink-0 cursor-pointer"/>
-                                                </div>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                    <button
-                                        onClick={() => handlePayment("basic")}
-                                        className="bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition duration-300 mt-auto"
-                                    >
-                                        Unlock
-                                    </button>
-                                </div>
                             </div>
                         </div>
                     </div>

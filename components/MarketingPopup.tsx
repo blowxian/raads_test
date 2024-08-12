@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {Check, ChevronUp, DollarSign, X} from 'lucide-react';
+import {Check, ChevronDown, DollarSign, X} from 'lucide-react';
 
 const MarketingPopup = ({handlePayment, isPaid = false}: any) => {
     const [showPopup, setShowPopup] = useState(false);
@@ -60,7 +60,7 @@ const MarketingPopup = ({handlePayment, isPaid = false}: any) => {
         return null;
     }
 
-    const discountPercentage = Math.round((1 - premiumPlan.price / premiumPlan.originalPrice) * 100);
+    const discountAmount = premiumPlan.originalPrice - premiumPlan.price;
 
     return (
         <>
@@ -76,7 +76,7 @@ const MarketingPopup = ({handlePayment, isPaid = false}: any) => {
                             <div
                                 className="bg-yellow-300 text-blue-800 font-bold py-2 px-4 rounded-full inline-block mb-4 transform -rotate-2 shadow-md">
                                 <DollarSign className="inline-block mr-1" size={20}/>
-                                <span className="text-2xl">{discountPercentage}% OFF</span>
+                                <span className="text-2xl">{discountAmount} OFF</span>
                             </div>
                             <p className="text-white text-lg mb-6 font-sans">
                                 Transform your understanding with our {premiumPlan.title} RAADS-R report!
@@ -113,22 +113,18 @@ const MarketingPopup = ({handlePayment, isPaid = false}: any) => {
             )}
             {showMinimized && !showPopup && (
                 <div
-                    className="fixed bottom-4 right-4 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg shadow-lg p-4 z-50 text-white cursor-pointer"
+                    className="fixed top-4 right-4 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg shadow-lg p-3 z-50 text-white cursor-pointer"
                     onClick={() => setShowPopup(true)}>
-                    <button className="absolute top-1 right-1 text-white hover:text-gray-200">
-                        <ChevronUp size={20}/>
-                    </button>
-                    <div className="mb-2">
-                        <p className="text-lg font-bold">Premium RAADS-R Report</p>
-                        <p className="text-sm">{discountPercentage}% OFF - Now Only ${premiumPlan.price}</p>
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="font-bold text-sm">Premium Offer</p>
+                            <p className="text-xs">Save ${discountAmount}</p>
+                        </div>
+                        <ChevronDown size={20} className="ml-2"/>
                     </div>
-                    <ul className="text-xs space-y-1 mb-2">
-                        <li>• Personalized Insights</li>
-                        <li>• Expert eBooks</li>
-                        <li>• AI Assistant Access</li>
-                    </ul>
-                    <p className="text-xs font-semibold">Ends in: <span
-                        className="font-mono">{formatTime(timeLeft)}</span></p>
+                    <p className="text-xs mt-1">
+                        Ends in: <span className="font-mono">{formatTime(timeLeft)}</span>
+                    </p>
                 </div>
             )}
         </>

@@ -29,7 +29,7 @@ const MarketingPopup = ({handlePayment, isPaid = false}: any) => {
         if (!isPaid) {
             const timer = setTimeout(() => {
                 setShowPopup(true);
-            }, 8000);
+            }, 20000);
 
             return () => clearTimeout(timer);
         }

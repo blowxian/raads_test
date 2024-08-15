@@ -31,6 +31,7 @@ import {logEvent} from '@/lib/GAlog';
 import MarketingPopup from "@/components/MarketingPopup";
 import Cookies from "js-cookie";
 import dynamic from "next/dynamic";
+import AvatarShowcase from "@/components/AvatarShowcase";
 
 const ScoreCharts = dynamic(() => import('@/components/ScoreCharts'), {
     ssr: false,
@@ -672,6 +673,8 @@ export default function RAADSRReport() {
                                 {shareError && (
                                     <p className="text-red-500 text-sm mt-2">{shareError}</p>
                                 )}
+                                {/* Add the new AvatarShowcase component here */}
+                                <AvatarShowcase score={totalScore}/>
                             </div>
                         </div>
                     </div>

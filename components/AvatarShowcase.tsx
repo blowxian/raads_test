@@ -33,7 +33,7 @@ const AvatarShowcase = ({score}: any) => {
 
 
     return (
-        <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-4xl mt-4">
+        <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-4xl relative z-20">
             <h2 className="text-base font-bold mb-4">FREE Personalized RAADS-R Score Avatar</h2>
             <div className="relative">
                 <img

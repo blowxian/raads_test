@@ -673,9 +673,9 @@ export default function RAADSRReport() {
                                 {shareError && (
                                     <p className="text-red-500 text-sm mt-2">{shareError}</p>
                                 )}
-                                {/* Add the new AvatarShowcase component here */}
-                                <AvatarShowcase score={totalScore}/>
                             </div>
+                            {/* Add the new AvatarShowcase component here */}
+                            <AvatarShowcase score={totalScore}/>
                         </div>
                     </div>
 

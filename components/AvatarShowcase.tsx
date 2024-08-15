@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {ArrowLeft, ArrowRight} from 'lucide-react';
 
-const AvatarShowcase = ({score}) => {
+const AvatarShowcase = ({score}: any) => {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const images = [
         '/style001.webp', '/style002.webp', '/style003.webp', '/style004.webp',

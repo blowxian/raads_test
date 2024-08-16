@@ -675,7 +675,9 @@ export default function RAADSRReport() {
                                 )}
                             </div>
                             {/* Add the new AvatarShowcase component here */}
-                            <AvatarShowcase score={totalScore}/>
+                            <div className="hidden md:block">
+                                <AvatarShowcase score={totalScore}/>
+                            </div>
                         </div>
                     </div>
 

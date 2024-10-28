@@ -1,8 +1,8 @@
 "use client";
 
-import React, {useEffect, useRef, useState} from 'react';
-import {useSearchParams} from 'next/navigation';
-import {useReactToPrint} from 'react-to-print';
+import React, { useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useReactToPrint } from 'react-to-print';
 import {
     AlertTriangle,
     Book,
@@ -27,11 +27,10 @@ import {
     XCircle
 } from 'lucide-react';
 import axios from "axios";
-import {logEvent} from '@/lib/GAlog';
+import { logEvent } from '@/lib/GAlog';
 import MarketingPopup from "@/components/MarketingPopup";
 import Cookies from "js-cookie";
 import dynamic from "next/dynamic";
-import AvatarShowcase from "@/components/AvatarShowcase";
 
 const ScoreCharts = dynamic(() => import('@/components/ScoreCharts'), {
     ssr: false,
@@ -241,27 +240,27 @@ const getGeneralAdvice = () => {
         {
             title: "Mental Health Support",
             content: "Many individuals with autism or autism-like traits benefit from mental health support, including counseling and cognitive-behavioral therapy (CBT).",
-            icon: <HeartPulse className="h-6 w-6 mb-2 text-blue-600"/>
+            icon: <HeartPulse className="h-6 w-6 mb-2 text-blue-600" />
         },
         {
             title: "Educational Accommodations",
             content: "Ensure that educational settings provide necessary accommodations, such as individualized education plans (IEPs) and specialized support.",
-            icon: <GraduationCap className="h-6 w-6 mb-2 text-blue-600"/>
+            icon: <GraduationCap className="h-6 w-6 mb-2 text-blue-600" />
         },
         {
             title: "Social Skills Training",
             content: "Programs focusing on social skills can significantly improve interactions and quality of life.",
-            icon: <Users className="h-6 w-6 mb-2 text-blue-600"/>
+            icon: <Users className="h-6 w-6 mb-2 text-blue-600" />
         },
         {
             title: "Regular Medical Checkups",
             content: "Regular medical and developmental checkups can help address any co-occurring conditions or concerns early on.",
-            icon: <Stethoscope className="h-6 w-6 mb-2 text-blue-600"/>
+            icon: <Stethoscope className="h-6 w-6 mb-2 text-blue-600" />
         },
         {
             title: "Family Education",
             content: "Educate family members about autism to foster a supportive home environment and reduce misunderstandings.",
-            icon: <Home className="h-6 w-6 mb-2 text-blue-600"/>
+            icon: <Home className="h-6 w-6 mb-2 text-blue-600" />
         }
     ];
 };
@@ -388,7 +387,7 @@ export default function RAADSRReport() {
                 className="flex items-center justify-between w-full p-2 bg-gray-100 rounded"
             >
                 <span className="font-bold">Included eBooks</span>
-                {showEbooks ? <ChevronUp className="h-5 w-5"/> : <ChevronDown className="h-5 w-5"/>}
+                {showEbooks ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
             </button>
             {showEbooks && (
                 <div className="grid grid-cols-1 gap-4 mt-4">
@@ -397,12 +396,12 @@ export default function RAADSRReport() {
                             <h4 className="font-bold text-sm mb-2">{book.title}</h4>
                             <div className="flex items-center justify-between">
                                 <img src={book.cover} alt={book.title}
-                                     className="w-20 md:w-32 object-cover float-left mr-2 border-black drop-shadow-md"/>
+                                    className="w-20 md:w-32 object-cover float-left mr-2 border-black drop-shadow-md" />
                                 <div>
                                     <p
                                         className="text-xs text-gray-600"
-                                        style={{whiteSpace: 'pre-wrap'}}
-                                        dangerouslySetInnerHTML={{__html: book.description}}
+                                        style={{ whiteSpace: 'pre-wrap' }}
+                                        dangerouslySetInnerHTML={{ __html: book.description }}
                                     />
                                     <p className="amazon-price font-bold">Retail Price: <span
                                         className="text-gray-500 line-through">${book.amazonPrice}</span></p>
@@ -429,15 +428,15 @@ export default function RAADSRReport() {
                             <h4 className="font-bold text-sm mb-2">{book.title}</h4>
                             <div className="flex items-center justify-between">
                                 <img src={book.cover} alt={book.title}
-                                     className="w-20 md:w-32 object-cover float-left mr-2 border-black drop-shadow-md"/>
+                                    className="w-20 md:w-32 object-cover float-left mr-2 border-black drop-shadow-md" />
                                 <div>
                                     <p
                                         className="text-xs text-gray-600"
-                                        style={{whiteSpace: 'pre-wrap'}}
-                                        dangerouslySetInnerHTML={{__html: book.description}}
+                                        style={{ whiteSpace: 'pre-wrap' }}
+                                        dangerouslySetInnerHTML={{ __html: book.description }}
                                     />
                                     <a className="mb-4 bg-blue-600 text-white px-4 py-2 rounded float-right ml-2 flex items-center"
-                                       href={book.link}>
+                                        href={book.link}>
                                         Download
                                     </a>
                                 </div>
@@ -492,7 +491,7 @@ export default function RAADSRReport() {
 
                         // 获取当前时间并转换为东八区时间格式
                         const date = new Date();
-                        const options = {timeZone: 'Asia/Shanghai', hour12: false};
+                        const options = { timeZone: 'Asia/Shanghai', hour12: false };
                         const formattedDate = date.toLocaleString('zh-CN', options);
 
                         notifyFeishu(`[${process.env.NEXT_PUBLIC_ENV_HINT}] ${data.session.customer_email || data.session.customer_details.email} 购买了 ${data.metadata.plan}, 回执编号 ${data.invoice.number ? data.invoice.number : "无"}, 在 ${formattedDate} 访问了购买成功页面`);
@@ -526,7 +525,7 @@ export default function RAADSRReport() {
 
                 // 获取当前时间并转换为东八区时间格式
                 const date = new Date();
-                const options = {timeZone: 'Asia/Shanghai', hour12: false};
+                const options = { timeZone: 'Asia/Shanghai', hour12: false };
                 const formattedDate = date.toLocaleString('zh-CN', options);
 
                 getIPLocation(ip).then(location => {
@@ -600,16 +599,15 @@ export default function RAADSRReport() {
             <div>
 
                 <div className="w-full flex flex-wrap md:justify-end button-container"
-                     ref={reportRef}>
+                    ref={reportRef}>
                     <button onClick={handlePrint}
-                            className={`mb-4 px-4 py-2 rounded ml-4 flex items-center ${
-                                isPaid ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-300 cursor-not-allowed'
+                        className={`mb-4 px-4 py-2 rounded ml-4 flex items-center ${isPaid ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-300 cursor-not-allowed'
                             }`} disabled={!isPaid}>
 
                         {isPaid ? (
-                            <Download className="mr-2 text-white"/>
+                            <Download className="mr-2 text-white" />
                         ) : (
-                            <XCircle className="mr-2 text-gray-300"/>
+                            <XCircle className="mr-2 text-gray-300" />
                         )}
                         Download Report
                     </button>
@@ -624,7 +622,7 @@ export default function RAADSRReport() {
                             {hasDetailedScores ? (
                                 <div className={`${!isPaid ? 'blur-sm' : ''}`}>
                                     <h2 className="text-xl font-bold mb-2">RAADS-R Visualization</h2>
-                                    <ScoreCharts scores={scores}/>
+                                    <ScoreCharts scores={scores} />
                                 </div>
                             ) : null}
 
@@ -637,11 +635,11 @@ export default function RAADSRReport() {
                             {/* Lock icon and unlock button */}
                             {!isPaid && (
                                 <div className="absolute inset-0 flex flex-col items-center justify-center mt-6 z-10">
-                                    <Lock className="h-16 w-16 text-blue-600 mb-4"/>
+                                    <Lock className="h-16 w-16 text-blue-600 mb-4" />
                                     <button
                                         className="bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition duration-300"
                                         onClick={() => {
-                                            (purchaseRef.current as any)?.scrollIntoView({behavior: 'smooth'});
+                                            (purchaseRef.current as any)?.scrollIntoView({ behavior: 'smooth' });
                                             logEvent('click', 'RAADSRReport', 'unlock_full_report', totalScore);
                                         }}
                                     >
@@ -661,22 +659,18 @@ export default function RAADSRReport() {
                                         onClick={handleTwitterShare}
                                         className="bg-blue-400 text-white p-2 rounded-full hover:bg-blue-500 transition duration-300 z-20"
                                     >
-                                        <Twitter size={20}/>
+                                        <Twitter size={20} />
                                     </button>
                                     <button
                                         onClick={handleFacebookShare}
                                         className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition duration-300 z-20"
                                     >
-                                        <Facebook size={20}/>
+                                        <Facebook size={20} />
                                     </button>
                                 </div>
                                 {shareError && (
                                     <p className="text-red-500 text-sm mt-2">{shareError}</p>
                                 )}
-                            </div>
-                            {/* Add the new AvatarShowcase component here */}
-                            <div className="hidden md:block">
-                                <AvatarShowcase score={totalScore}/>
                             </div>
                         </div>
                     </div>
@@ -688,7 +682,7 @@ export default function RAADSRReport() {
                             {getRecommendations(totalScore).map((recommendation, index) => (
                                 <div key={index} className="bg-gray-50 p-4 rounded-lg">
                                     <div className="flex items-center mb-1">
-                                        <recommendation.icon className="h-6 w-6 mb-2 text-blue-600"/>
+                                        <recommendation.icon className="h-6 w-6 mb-2 text-blue-600" />
                                         <h3 className="font-bold ml-3">{recommendation.title}</h3>
                                     </div>
                                     <p className="text-sm">{recommendation.content}</p>
@@ -722,11 +716,11 @@ export default function RAADSRReport() {
                     {/* Lock icon and unlock button */}
                     {!isPaid && (
                         <div className="absolute inset-0 flex flex-col items-center justify-center mt-6">
-                            <Lock className="h-16 w-16 text-blue-600 mb-4"/>
+                            <Lock className="h-16 w-16 text-blue-600 mb-4" />
                             <button
                                 className="bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition duration-300"
                                 onClick={() => {
-                                    (purchaseRef.current as any)?.scrollIntoView({behavior: 'smooth'});
+                                    (purchaseRef.current as any)?.scrollIntoView({ behavior: 'smooth' });
                                     logEvent('click', 'RAADSRReport', 'unlock_full_report', totalScore);
                                 }}
                             >
@@ -745,14 +739,14 @@ export default function RAADSRReport() {
                             className="text-center p-4 sm:p-8 w-full max-w-4xl h-full">
                             <div className="flex flex-col items-center justify-center mb-4">
                                 <div className="flex items-center space-x-4">
-                                    <Lock className="h-12 w-12 text-blue-600"/>
+                                    <Lock className="h-12 w-12 text-blue-600" />
                                     <h2 className="text-2xl font-bold">Unlock Report</h2>
                                 </div>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2 justify-center">
                                 {pricingTiers.map((tier, index) => (
                                     <div key={index}
-                                         className={`border-2 rounded-lg p-4 flex flex-col justify-between mx-auto ${showFlash ? 'flash-border' : ''}`}>
+                                        className={`border-2 rounded-lg p-4 flex flex-col justify-between mx-auto ${showFlash ? 'flash-border' : ''}`}>
                                         <div>
                                             <h3 className="font-bold text-lg mb-2">{tier.title}</h3>
                                             <div className="mb-4">
@@ -763,22 +757,22 @@ export default function RAADSRReport() {
                                             <ul className="text-left mb-4">
                                                 {tier.features.map((feature, fIndex) => (
                                                     <li key={fIndex} className="flex items-center mb-2">
-                                                        <Check className="h-4 w-4 mr-2 text-green-500 flex-shrink-0"/>
+                                                        <Check className="h-4 w-4 mr-2 text-green-500 flex-shrink-0" />
                                                         <div>
-                                                        <span className="text-sm"
-                                                              dangerouslySetInnerHTML={{__html: feature.text}}/>{feature.anchorName !== 'none' &&
-                                                            <Eye
-                                                                onClick={() => {
-                                                                    if (feature.anchorName === 'none')
-                                                                        return;
-                                                                    const ref = {
-                                                                        report: reportRef,
-                                                                        ebookDetail: ebookDetailRef,
-                                                                        aiDetail: aiDetailRef
-                                                                    }[feature.anchorName];
-                                                                    (ref?.current as any)?.scrollIntoView({behavior: 'smooth'});
-                                                                }}
-                                                                className="inline-block h-4 w-4 ml-2 text-blue-500 flex-shrink-0 cursor-pointer"/>}
+                                                            <span className="text-sm"
+                                                                dangerouslySetInnerHTML={{ __html: feature.text }} />{feature.anchorName !== 'none' &&
+                                                                    <Eye
+                                                                        onClick={() => {
+                                                                            if (feature.anchorName === 'none')
+                                                                                return;
+                                                                            const ref = {
+                                                                                report: reportRef,
+                                                                                ebookDetail: ebookDetailRef,
+                                                                                aiDetail: aiDetailRef
+                                                                            }[feature.anchorName];
+                                                                            (ref?.current as any)?.scrollIntoView({ behavior: 'smooth' });
+                                                                        }}
+                                                                        className="inline-block h-4 w-4 ml-2 text-blue-500 flex-shrink-0 cursor-pointer" />}
                                                         </div>
                                                     </li>
                                                 ))}
@@ -800,14 +794,14 @@ export default function RAADSRReport() {
                 {!selectedTier && (
                     <>
                         <div className="flex items-center justify-center overflow-auto"
-                             ref={ebookDetailRef}>
+                            ref={ebookDetailRef}>
                             <div
                                 className="text-center p-4 sm:p-8 w-full max-w-4xl h-full">
-                                <EbookPreview/>
+                                <EbookPreview />
                             </div>
                         </div>
                         <div className="flex items-center justify-center overflow-auto"
-                             ref={aiDetailRef}>
+                            ref={aiDetailRef}>
                             <div className="text-center p-4 sm:p-8 w-full max-w-4xl h-full">
                                 <div className="mt-4 w-full">
                                     <span
@@ -815,14 +809,14 @@ export default function RAADSRReport() {
                                     <div className="grid grid-cols-1 gap-4 mt-4">
                                         <div className="p-2 border rounded">
                                             <img src="/raads_report/thumbnail/ai_assistant.png" alt="AI Assistant"
-                                                 className="h-20 md:h-32 object-cover float-right ml-2 border-black drop-shadow-md"/>
+                                                className="h-20 md:h-32 object-cover float-right ml-2 border-black drop-shadow-md" />
                                             <div className="flex flex-col items-start justify-between h-full">
                                                 <div>
                                                     <h4 className="font-bold text-sm">AI Powered Mental Health
                                                         Assistant</h4>
                                                     <p
                                                         className="text-xs text-gray-600">
-                                                        <br/>
+                                                        <br />
                                                         Experience personalized emotional support and professional
                                                         advice with
                                                         our AI-powered mental health assistant. Anytime, anywhere, our
@@ -849,7 +843,7 @@ export default function RAADSRReport() {
                     <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-4xl mt-4" id="EBook">
                         <h1 className="text-2xl font-bold mb-4">E-Book</h1>
                         <div className={!isPaid ? 'blur-md' : ''}>
-                            <EbookDownload/>
+                            <EbookDownload />
                         </div>
                     </div>
                 )}
@@ -859,24 +853,24 @@ export default function RAADSRReport() {
                         <h1 className="text-2xl font-bold mb-4">Continuous AI Assistant</h1>
                         <div className={`${!isPaid ? 'blur-md' : ''}`}>
                             <img src="/raads_report/thumbnail/ai_assistant.png" alt="AI Assistant"
-                                 className="h-20 md:h-32 object-cover float-right ml-2 border-black drop-shadow-md"/>
+                                className="h-20 md:h-32 object-cover float-right ml-2 border-black drop-shadow-md" />
                             <h4 className="font-bold text-sm">AI Powered Mental Health
                                 Assistant</h4>
                             <p
                                 className="text-xs text-gray-600">
-                                <br/>
+                                <br />
                                 Experience personalized emotional support and professional advice with
                                 our AI-powered mental health assistant. Anytime, anywhere, our assistant
                                 is here to help you navigate life&apos;s challenges, improve your mental
                                 well-being, and enjoy a more fulfilling and balanced life.
                             </p>
                             <a className="mb-4 bg-blue-600 text-white px-4 py-2 rounded mr-4 mt-4 float-left flex"
-                               href="https://raadstest.com/ai-powered-mental-health-assistant-paidversion/"
-                               target="_blank">
-                                <Calendar className="mr-2"/>
+                                href="https://raadstest.com/ai-powered-mental-health-assistant-paidversion/"
+                                target="_blank">
+                                <Calendar className="mr-2" />
                                 One Year Access
                             </a>
-                            <div><br/><br/><br/></div>
+                            <div><br /><br /><br /></div>
                         </div>
                     </div>
                 )}
@@ -899,7 +893,7 @@ export default function RAADSRReport() {
                             wd.gstar@gmail.com</em></div>
                 )}
             </div>
-            <MarketingPopup handlePayment={handlePayment} isPaid={isPaid}/>
+            <MarketingPopup handlePayment={handlePayment} isPaid={isPaid} />
         </div>
     );
 }

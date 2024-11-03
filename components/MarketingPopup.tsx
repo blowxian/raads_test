@@ -32,7 +32,7 @@ const MarketingPopup = ({ handlePayment, isPaid = false }: any) => {
             const timer = setTimeout(() => {
                 setShowPopup(true);
                 startCountdown();
-            }, 30000);
+            }, 18000);
 
             return () => clearTimeout(timer);
         }

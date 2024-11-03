@@ -9,14 +9,20 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@google-cloud/vertexai": "^1.9.0",
     "axios": "^1.7.3",
+    "google-auth-library": "^9.14.2",
+    "googleapis": "^144.0.0",
     "js-cookie": "^3.0.5",
     "lucide-react": "^0.424.0",
     "next": "^14.2.5",
     "react": "^18",
     "react-dom": "^18",
+    "react-markdown": "^9.0.1",
     "react-to-print": "^2.15.1",
-    "recharts": "^2.12.7",
+    "react-type-animation": "^3.2.0",
+    "rechart": "^0.0.1",
+    "recharts": "^2.13.2",
     "stripe": "^16.6.0"
   },
   "devDependencies": {

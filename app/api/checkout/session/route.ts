@@ -1,5 +1,5 @@
 import Stripe from 'stripe';
-import {NextRequest, NextResponse} from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import axios from "axios";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
 
     // 获取当前时间并转换为东八区时间格式
     const date = new Date();
-    const options = {timeZone: 'Asia/Shanghai', hour12: false};
+    const options = { timeZone: 'Asia/Shanghai', hour12: false };
     const formattedDate = date.toLocaleString('zh-CN', options);
 
     console.log(`[${process.env.NEXT_PUBLIC_ENV_HINT}] [${formattedDate}] IP: ${ip}, 用户访问报告支付页  ${plan}`);
@@ -41,19 +41,21 @@ export async function POST(req: NextRequest) {
     switch (plan) {
         case 'basic':
             // priceId = 'price_1Pea9ERsqc5wnJW18S6sgHcZ';      // Test Price ID
-            priceId = 'price_1Pm74JRsqc5wnJW1dAHdHPbM';
+            // priceId = 'price_1Pm74JRsqc5wnJW1dAHdHPbM';
+            priceId = 'price_1QGtHpRsqc5wnJW1wRJrAiY6';
             break;
         case 'premium':
             // priceId = 'price_1Pea9ERsqc5wnJW18S6sgHcZ';      // Test Price ID
             // priceId = 'price_1PkP2uRsqc5wnJW1H00EWgPH';
-            priceId = 'price_1Pmr41Rsqc5wnJW12ZXcZlhd';
+            // priceId = 'price_1Pmr41Rsqc5wnJW12ZXcZlhd';
+            priceId = 'price_1QGtKhRsqc5wnJW1IiBysX7S';
             break;
         case 'service':
             // priceId = 'price_1Pea9ERsqc5wnJW18S6sgHcZ';      // Test Price ID
             priceId = 'price_1PkP3iRsqc5wnJW1OvKCSjeP';
             break;
         default:
-            return NextResponse.json({error: 'Invalid plan specified'});
+            return NextResponse.json({ error: 'Invalid plan specified' });
     }
 
     try {
@@ -68,18 +70,28 @@ export async function POST(req: NextRequest) {
             mode: 'payment',
             success_url: `${req.headers.get('origin')}?score=${score}&status=success&session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `${req.headers.get('origin')}?score=${score}&status=cancel`,
-            automatic_tax: {enabled: true},
+            automatic_tax: { enabled: true },
             metadata: {
                 score: score,
                 plan: plan
             }
         } as any;
 
-        // 如果提供了优惠券代码，添加到会话选项中
-        if (couponCode) {
+        // 设置优惠券代码（用户提供的或默认的）
+        let appliedCoupon = couponCode;
+        if (!appliedCoupon) {
+            if (plan === 'basic') {
+                appliedCoupon = 'ut2EOvQ9';
+            } else if (plan === 'premium') {
+                appliedCoupon = 'lpLDKhz8';
+            }
+        }
+
+        // 如果有优惠券代码（包括默认的），添加到会话选项中
+        if (appliedCoupon) {
             sessionOptions.discounts = [
                 {
-                    coupon: couponCode,
+                    coupon: appliedCoupon,
                 },
             ];
         }
@@ -87,6 +99,6 @@ export async function POST(req: NextRequest) {
         const session = await stripe.checkout.sessions.create(sessionOptions);
         return NextResponse.redirect(session.url as string, 303);
     } catch (err: any) {
-        return NextResponse.json({error: err.message});
+        return NextResponse.json({ error: err.message });
     }
 }

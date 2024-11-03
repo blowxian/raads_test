@@ -11,8 +11,8 @@ const MarketingPopup = ({ handlePayment, isPaid = false }: any) => {
     const premiumPlan = {
         name: "premium",
         title: "Premium",
-        originalPrice: 98,
-        price: 15,
+        originalPrice: 99.99,
+        price: 29.99,
         features: [
             {
                 text: `Comprehensive Report: <strong>In-Depth Analysis & Personalized Insights</strong>`,
@@ -32,7 +32,7 @@ const MarketingPopup = ({ handlePayment, isPaid = false }: any) => {
             const timer = setTimeout(() => {
                 setShowPopup(true);
                 startCountdown();
-            }, 15000);
+            }, 30000);
 
             return () => clearTimeout(timer);
         }
@@ -122,7 +122,7 @@ const MarketingPopup = ({ handlePayment, isPaid = false }: any) => {
                                 </p>
                             </div>
                             <button
-                                onClick={() => handlePayment('premium', "BpW0IPwI")}
+                                onClick={() => handlePayment('premium', "Jhtnzw4f")}
                                 className="bg-white text-red-600 font-bold py-2.5 sm:py-3 px-5 sm:px-6 rounded-full hover:bg-red-100 transition duration-300 shadow-lg text-base sm:text-lg w-full sm:w-auto"
                             >
                                 Click to Pay Now

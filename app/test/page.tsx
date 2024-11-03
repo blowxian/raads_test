@@ -1,13 +1,13 @@
 "use client"
 
-import React, {useEffect, useState} from 'react';
-import {useRouter} from 'next/navigation';
-import {logEvent} from '@/lib/GAlog';
+import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { logEvent } from '@/lib/GAlog';
 import Cookies from 'js-cookie';
 
 const questions = [
-    {"id": 1, "text": "I am a sympathetic person."},
-    {"id": 2, "text": "I often use words and phrases from movies and television in conversations."},
+    { "id": 1, "text": "I am a sympathetic person." },
+    { "id": 2, "text": "I often use words and phrases from movies and television in conversations." },
     { "id": 3, "text": "I am often surprised when others tell me I have been rude." },
     { "id": 4, "text": "Sometimes I talk too loudly or too softly, and I am not aware of it." },
     { "id": 5, "text": "I often don't know how to act in social situations." },
@@ -85,7 +85,7 @@ const questions = [
     { "id": 77, "text": "I like to have close friends." },
     { "id": 78, "text": "People tell me that I give too much detail." },
     { "id": 79, "text": "I am often told that I ask embarrassing questions." },
-    {"id": 80, "text": "I tend to point out other people's mistakes."}
+    { "id": 80, "text": "I tend to point out other people's mistakes." }
 ];
 
 const options = [
@@ -127,7 +127,7 @@ export default function QuizPage() {
 
     const handleAnswer = (value: number) => {
         logEvent('click', 'Quiz', `Answered Question ${currentQuestion + 1}`, value);
-        setAnswers({...answers, [currentQuestion]: value});
+        setAnswers({ ...answers, [currentQuestion]: value });
         setShowWarning(false);
         setShowFinalWarning(false);
     };
@@ -188,7 +188,7 @@ export default function QuizPage() {
             }
         });
 
-        return {totalScore, scores};
+        return { totalScore, scores };
     };
 
     const handleSubmit = () => {
@@ -209,13 +209,53 @@ export default function QuizPage() {
         const scores = calculateScore();
         logEvent('click', 'Quiz', 'Final Submit', scores.totalScore);
 
-        // 将 scores.totalScore 和各维度的分数存储到 cookie 中
-        Cookies.set('totalScore', (scores as any).totalScore, {expires: 7});
-        Cookies.set('scores', JSON.stringify(scores.scores), {expires: 7});
+        // 优化答案数据结构，只存储必要信息
+        const answersData = questions.map(q => {
+            const answerIndex = answers[questions.findIndex(que => que.id === q.id)];
+            return {
+                i: q.id, // 使用简短的键名
+                a: answerIndex // 只存储答案索引
+            };
+        });
 
-        console.log('Submit:', answers);
-        console.log('Total Score:', scores.totalScore);
-        console.log('Scores: ', scores.scores)
+        // 将答案分块存储到 localStorage
+        try {
+            const CHUNK_SIZE = 20; // 每块20个答案
+            const chunks = [];
+
+            for (let i = 0; i < answersData.length; i += CHUNK_SIZE) {
+                chunks.push(answersData.slice(i, i + CHUNK_SIZE));
+            }
+
+            // 存储块数量
+            localStorage.setItem('answersChunkCount', chunks.length.toString());
+
+            // 存储每个块
+            chunks.forEach((chunk, index) => {
+                localStorage.setItem(`answersChunk_${index}`, JSON.stringify(chunk));
+            });
+
+            // 存储问题文本引用表（单独存储，因为这些文本较大）
+            const questionsMap = questions.reduce((acc, q) => {
+                acc[q.id] = q.text;
+                return acc;
+            }, {} as Record<number, string>);
+            localStorage.setItem('questionsMap', JSON.stringify(questionsMap));
+
+            // 存储选项引用表
+            localStorage.setItem('optionsMap', JSON.stringify(options));
+
+            // 仍然保留 Cookie 存储总分和维度分数（这些数据量小）
+            Cookies.set('totalScore', scores.totalScore.toString(), { expires: 7 });
+            Cookies.set('scores', JSON.stringify(scores.scores), { expires: 7 });
+
+        } catch (error) {
+            console.error('Storage error:', error);
+            // 如果存储失败，至少保证基础功能可用
+            Cookies.set('totalScore', scores.totalScore.toString(), { expires: 7 });
+            Cookies.set('scores', JSON.stringify(scores.scores), { expires: 7 });
+        }
+
         window.open(`/?score=${scores.totalScore}&name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}`, '_blank');
         setTestComplete(true);
     };
@@ -267,7 +307,7 @@ export default function QuizPage() {
                                                 onChange={() => handleAnswer(index)}
                                             />
                                             <label htmlFor={`option-${index}`}
-                                                   className="ml-3 block text-sm sm:text-base font-medium text-gray-700">
+                                                className="ml-3 block text-sm sm:text-base font-medium text-gray-700">
                                                 {option}
                                             </label>
                                         </div>
@@ -280,7 +320,7 @@ export default function QuizPage() {
                                 <div className="h-2 bg-gray-200 rounded-full mt-6">
                                     <div
                                         className="h-full bg-blue-500 rounded-full"
-                                        style={{width: `${progress}%`}}
+                                        style={{ width: `${progress}%` }}
                                     ></div>
                                 </div>
                                 <div className="mt-6 sm:mt-8 flex justify-between items-center">

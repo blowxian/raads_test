@@ -1001,6 +1001,32 @@ Format the response in clear sections with headers.`;
         </div>
     );
 
+    // 1. 首先添加日期格式化工具函数
+    const formatDate = () => {
+        // 使用固定格式，避免客户端/服务端差异
+        const date = new Date();
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}/${month}/${day}`;
+    };
+
+    // 2. 修改组件，使用 useEffect 确保客户端渲染
+    const [mounted, setMounted] = useState(false);
+    const [currentDate, setCurrentDate] = useState('');
+
+    useEffect(() => {
+        setMounted(true);
+        setCurrentDate(formatDate());
+    }, []);
+
+    // 3. 使用 dynamic import 处理客户端组件
+    const DynamicScoreCharts = dynamic(() => import('@/components/ScoreCharts'), {
+        ssr: false,
+        loading: () => <div className="min-h-[300px] flex items-center justify-center">Loading charts...</div>
+    });
+
+    // 4. 返回组件JSX，确保服务端和客户端渲染一致
     return (
         <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
             {!isPaid && <FloatingUnlockButton />}
@@ -1022,11 +1048,25 @@ Format the response in clear sections with headers.`;
 
                 <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-4xl relative" ref={componentRef}>
                     <h1 className="text-2xl font-bold mb-4">RAADS-R Evaluation Report</h1>
-                    <p className="text-sm text-gray-600 mb-4">Evaluation Date: {new Date().toLocaleDateString()}</p>
+                    {/* 只在客户端渲染日期 */}
+                    {mounted && (
+                        <p className="text-sm text-gray-600 mb-4">
+                            Evaluation Date: {currentDate}
+                        </p>
+                    )}
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                         <div className="col-span-2 relative">
-                            {renderCharts()}
+                            {hasDetailedScores && (
+                                <div className={`${!isPaid ? 'blur-sm' : ''}`}>
+                                    <h2 className="text-xl font-bold mb-2">RAADS-R Visualization</h2>
+                                    {scores.socialRelatedness !== undefined && (
+                                        <div className="min-h-[300px] w-full">
+                                            <DynamicScoreCharts scores={scores} />
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                             {renderContent()}
                         </div>
 

@@ -32,7 +32,6 @@ import MarketingPopup from "@/components/MarketingPopup";
 import Cookies from "js-cookie";
 import dynamic from "next/dynamic";
 import ReactMarkdown from 'react-markdown';
-import { TypeAnimation } from 'react-type-animation';
 
 const ScoreCharts = dynamic(() => import('@/components/ScoreCharts'), {
     ssr: false,
@@ -375,7 +374,7 @@ export default function RAADSRReport() {
     const [showEbooks, setShowEbooks] = useState(true);
     const [paymentCancelled, setPaymentCancelled] = useState(false);
     const [showFlash, setShowFlash] = useState(false);
-    const [customerEmail, setCustomerEmail] = useState(null);
+    const [customerEmail, setCustomerEmail] = useState<string | null>(null);
     const [invoiceNumber, setInvoiceNumber] = useState(null);
     const componentRef = useRef(null);
     const purchaseRef = useRef(null); // 用于滚动到购买区域
@@ -516,7 +515,7 @@ export default function RAADSRReport() {
                         console.log(data);
                         setIsPaid(true);
                         setSelectedTier(data.metadata?.plan);
-                        setCustomerEmail(data.session?.customer_email || data.session?.customer_details?.email)
+                        setCustomerEmail(data.session?.customer_email || data.session?.customer_details?.email);
 
                         // 添加空值检查
                         const invoiceNum = data.invoice?.number;
@@ -580,7 +579,7 @@ export default function RAADSRReport() {
                 } catch (locationError) {
                     // 如果获取位置失败，仍然发送基本信息
                     await notifyFeishu(
-                        `[${currentUrl}] [${formattedDate}] IP: ${ip}, 用户访问报告详页 (位置信息获取失败)`
+                        `[${currentUrl}] [${formattedDate}] IP: ${ip}, 用户访问报详页 (位置信息获取失败)`
                     );
                     console.warn('Failed to fetch location details:', locationError);
                 }
@@ -600,6 +599,32 @@ export default function RAADSRReport() {
             } catch (error) {
                 console.error('Failed to parse answers from cookie:', error);
             }
+        }
+
+        // 从 URL 参数中获取邮箱
+        const email = searchParams.get('email');
+        if (email) {
+            setCustomerEmail(email);
+        }
+
+        // 从支付会话中获取邮箱
+        const sessionId = searchParams.get('session_id');
+        if (sessionId) {
+            fetch(`/api/checkout/verify?session_id=${sessionId}`)
+                .then(res => res.json())
+                .then(data => {
+                    console.log(data);
+                    setIsPaid(true);
+                    setSelectedTier(data.metadata?.plan);
+                    // 设置邮箱，优先使用会话中的邮箱
+                    setCustomerEmail(data.session?.customer_email || data.session?.customer_details?.email || email);
+
+                    // ... rest of the code ...
+                })
+                .catch(error => {
+                    console.error("Failed to verify payment:", error);
+                    setIsPaid(false);
+                });
         }
     }, [searchParams]);
 
@@ -933,24 +958,6 @@ Format the response in clear sections with headers.`;
         );
     };
 
-    // 修改图表渲染部分
-    const renderCharts = () => {
-        if (!hasDetailedScores) return null;
-
-        return (
-            <div className={`${!isPaid ? 'blur-sm' : ''}`}>
-                <h2 className="text-xl font-bold mb-2">RAADS-R Visualization</h2>
-                {scores.socialRelatedness !== undefined && (
-                    <div className="min-h-[300px] w-full">
-                        <ScoreCharts
-                            scores={scores}
-                        />
-                    </div>
-                )}
-            </div>
-        );
-    };
-
     // 添加一个新的 state 来控制按钮的位置
     const [lockButtonVisible, setLockButtonVisible] = useState(false);
 
@@ -979,27 +986,40 @@ Format the response in clear sections with headers.`;
     }, [isPaid]);
 
     // 添加固定定位的解锁按钮
-    const FloatingUnlockButton = () => (
-        <div
-            className={`
-                fixed left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2
-                flex flex-col items-center justify-center
-                transition-opacity duration-300 z-50
-                ${lockButtonVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}
-            `}
-        >
-            <Lock className="h-16 w-16 text-blue-600 mb-4" />
-            <button
-                className="bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition duration-300"
-                onClick={() => {
-                    (purchaseRef.current as any)?.scrollIntoView({ behavior: 'smooth' });
-                    logEvent('click', 'RAADSRReport', 'unlock_full_report', totalScore);
-                }}
+    const FloatingUnlockButton = () => {
+        const handleUnlockClick = () => {
+            // 滚动到购买区域
+            (purchaseRef.current as any)?.scrollIntoView({ behavior: 'smooth' });
+
+            // 记录事件
+            logEvent('click', 'RAADSRReport', 'unlock_full_report', totalScore);
+
+            // 发送飞书通知（异步，不阻塞）
+            const message = `[${process.env.NEXT_PUBLIC_ENV_HINT}] User ${customerEmail || 'Unknown'} clicked unlock full report button (Score: ${totalScore})`;
+            notifyFeishu(message).catch(error => {
+                console.error('Failed to send Feishu notification:', error);
+            });
+        };
+
+        return (
+            <div
+                className={`
+                    fixed left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2
+                    flex flex-col items-center justify-center
+                    transition-opacity duration-300 z-50
+                    ${lockButtonVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}
+                `}
             >
-                Unlock Full Report
-            </button>
-        </div>
-    );
+                <Lock className="h-16 w-16 text-blue-600 mb-4" />
+                <button
+                    className="bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition duration-300"
+                    onClick={handleUnlockClick}
+                >
+                    Unlock Full Report
+                </button>
+            </div>
+        );
+    };
 
     // 1. 首先添加日期格式化工具函数
     const formatDate = () => {
@@ -1061,7 +1081,7 @@ Format the response in clear sections with headers.`;
                                 <div className={`${!isPaid ? 'blur-sm' : ''}`}>
                                     <h2 className="text-xl font-bold mb-2">RAADS-R Visualization</h2>
                                     {scores.socialRelatedness !== undefined && (
-                                        <div className="min-h-[300px] w-full">
+                                        <div className="min-h-[650px] md:min-h-[300px] w-full">
                                             <DynamicScoreCharts scores={scores} />
                                         </div>
                                     )}
@@ -1300,7 +1320,11 @@ Format the response in clear sections with headers.`;
                             wd.gstar@gmail.com</em></div>
                 )}
             </div>
-            <MarketingPopup handlePayment={handlePayment} isPaid={isPaid} />
+            <MarketingPopup
+                handlePayment={handlePayment}
+                isPaid={isPaid}
+                customerEmail={customerEmail}
+            />
         </div>
     );
 }

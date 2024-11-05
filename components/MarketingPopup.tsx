@@ -1,7 +1,51 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Check, ChevronDown, DollarSign, X } from 'lucide-react';
+import axios from 'axios';
 
-const MarketingPopup = ({ handlePayment, isPaid = false }: any) => {
+const FEISHU_NOTIFY_WEBHOOK_URL = 'https://open.feishu.cn/open-apis/bot/v2/hook/f4c87354-47b7-4ad1-83ff-a56962dc83a1';
+
+const sendFeishuNotification = async (message: string) => {
+    const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Notification timeout')), 5000); // 5秒超时
+    });
+
+    const notificationPromise = axios.post(FEISHU_NOTIFY_WEBHOOK_URL, {
+        msg_type: 'text',
+        content: { text: message },
+    });
+
+    Promise.race([notificationPromise, timeoutPromise])
+        .catch(error => {
+            console.error('Failed to send Feishu notification:', error);
+        });
+};
+
+const getLocationInfo = async () => {
+    try {
+        const ipResponse = await axios.get('https://api.ipify.org?format=json');
+        const ip = ipResponse.data.ip;
+
+        const locationResponse = await axios.get(`https://ipapi.co/${ip}/json/`);
+        const location = locationResponse.data;
+
+        const locationInfo = location ?
+            `[${location.city || 'Unknown'}, ${location.region || 'Unknown'}, ${location.country_name || 'Unknown'}]` :
+            '[Location unknown]';
+
+        return { ip, locationInfo };
+    } catch (error) {
+        console.error('Failed to get location info:', error);
+        return { ip: 'Unknown', locationInfo: '[Location unknown]' };
+    }
+};
+
+interface MarketingPopupProps {
+    handlePayment: (tier: string, coupon?: string) => void;
+    isPaid?: boolean;
+    customerEmail?: string | null;
+}
+
+const MarketingPopup = ({ handlePayment, isPaid = false, customerEmail = null }: MarketingPopupProps) => {
     const [showPopup, setShowPopup] = useState(false);
     const [showMinimized, setShowMinimized] = useState(false);
     const [displayTime, setDisplayTime] = useState('10:00.000');
@@ -32,11 +76,27 @@ const MarketingPopup = ({ handlePayment, isPaid = false }: any) => {
             const timer = setTimeout(() => {
                 setShowPopup(true);
                 startCountdown();
-            }, 16000);
+
+                (async () => {
+                    const date = new Date();
+                    const options = { timeZone: 'Asia/Shanghai', hour12: false };
+                    const formattedDate = date.toLocaleString('zh-CN', options);
+
+                    const { ip, locationInfo } = await getLocationInfo();
+
+                    console.log('Marketing Popup Email:', customerEmail);
+
+                    const emailInfo = customerEmail ? `Email: ${customerEmail}, ` : '';
+
+                    sendFeishuNotification(
+                        `[${process.env.NEXT_PUBLIC_ENV_HINT}] ${emailInfo}IP: ${ip} ${locationInfo}, 用户看到营销弹窗 at ${formattedDate}`
+                    );
+                })();
+            }, 12000);
 
             return () => clearTimeout(timer);
         }
-    }, [isPaid]);
+    }, [isPaid, customerEmail]);
 
     const startCountdown = () => {
         const startTime = performance.now();
@@ -76,6 +136,24 @@ const MarketingPopup = ({ handlePayment, isPaid = false }: any) => {
     const handleClose = () => {
         setShowPopup(false);
         setShowMinimized(true);
+    };
+
+    const handlePaymentWithNotification = (tier: string, coupon = "") => {
+        handlePayment(tier, coupon);
+
+        (async () => {
+            const date = new Date();
+            const options = { timeZone: 'Asia/Shanghai', hour12: false };
+            const formattedDate = date.toLocaleString('zh-CN', options);
+
+            const { ip, locationInfo } = await getLocationInfo();
+
+            const emailInfo = customerEmail ? `Email: ${customerEmail}, ` : '';
+
+            sendFeishuNotification(
+                `[${process.env.NEXT_PUBLIC_ENV_HINT}] ${emailInfo}IP: ${ip} ${locationInfo}, 用户点击营销弹窗购买按钮 at ${formattedDate}`
+            );
+        })();
     };
 
     if (isPaid) {
@@ -122,7 +200,7 @@ const MarketingPopup = ({ handlePayment, isPaid = false }: any) => {
                                 </p>
                             </div>
                             <button
-                                onClick={() => handlePayment('premium', "n24YX0wj")}
+                                onClick={() => handlePaymentWithNotification('premium', "n24YX0wj")}
                                 className="bg-white text-red-600 font-bold py-2.5 sm:py-3 px-5 sm:px-6 rounded-full hover:bg-red-100 transition duration-300 shadow-lg text-base sm:text-lg w-full sm:w-auto"
                             >
                                 Click to Pay Now

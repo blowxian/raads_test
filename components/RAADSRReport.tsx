@@ -283,7 +283,7 @@ const pricingTiers = [
         name: "premium",
         title: "Premium",
         originalPrice: 99.99,
-        price: 40,
+        price: 19,
         features: [
             {
                 text: `Comprehensive Report: <strong>In-Depth Analysis & Personalized Insights</strong>`,
@@ -301,7 +301,7 @@ const pricingTiers = [
         name: "basic",
         title: "Basic",
         originalPrice: 29.99,
-        price: 16,
+        price: 9,
         features: [
             {
                 text: `Comprehensive Report: <strong>In-Depth Analysis & Personalized Insights</strong>`,

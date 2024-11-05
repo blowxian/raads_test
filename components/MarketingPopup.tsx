@@ -57,7 +57,7 @@ const MarketingPopup = ({ handlePayment, isPaid = false, customerEmail = null, s
         name: "premium",
         title: "Premium",
         originalPrice: 99.99,
-        price: 20,
+        price: 12,
         features: [
             {
                 text: `Comprehensive Report: <strong>In-Depth Analysis & Personalized Insights</strong>`,
@@ -197,7 +197,7 @@ const MarketingPopup = ({ handlePayment, isPaid = false, customerEmail = null, s
                                 </p>
                             </div>
                             <button
-                                onClick={() => handlePaymentWithNotification('premium', "n24YX0wj")}
+                                onClick={() => handlePaymentWithNotification('premium', "krrzXOtV")}
                                 className="bg-white text-red-600 font-bold py-2.5 sm:py-3 px-5 sm:px-6 rounded-full hover:bg-red-100 transition duration-300 shadow-lg text-base sm:text-lg w-full sm:w-auto"
                             >
                                 Click to Pay Now

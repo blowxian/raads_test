@@ -1084,13 +1084,26 @@ Format the response in clear sections with headers.`;
     // 添加固定定位的解锁按钮
     const FloatingUnlockButton = () => {
         const handleUnlockClick = () => {
-            // 滚动到购买区域
+            // Check if report is generating
+            if (aiReport.loading) {
+                // Flash the notification by temporarily hiding and showing it
+                setShowNotification(false);
+                setTimeout(() => {
+                    setShowNotification(true);
+                }, 100);
+
+                // Scroll to the top where the notification is
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                return;
+            }
+
+            // Original behavior for non-generating state
             (purchaseRef.current as any)?.scrollIntoView({ behavior: 'smooth' });
 
             // Start marketing popup timer
             setTimeout(() => {
                 setShowMarketingPopup(true);
-            }, 12000); // Show popup after 12 seconds
+            }, 15000);
 
             // Record event
             logEvent('click', 'RAADSRReport', 'unlock_full_report', totalScore);
@@ -1116,7 +1129,7 @@ Format the response in clear sections with headers.`;
                     className="bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition duration-300"
                     onClick={handleUnlockClick}
                 >
-                    Unlock Full Report
+                    {aiReport.loading ? 'Report Generating...' : 'Unlock Full Report'}
                 </button>
             </div>
         );

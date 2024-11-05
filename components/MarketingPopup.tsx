@@ -43,9 +43,10 @@ interface MarketingPopupProps {
     handlePayment: (tier: string, coupon?: string) => void;
     isPaid?: boolean;
     customerEmail?: string | null;
+    showMarketingPopup?: boolean;
 }
 
-const MarketingPopup = ({ handlePayment, isPaid = false, customerEmail = null }: MarketingPopupProps) => {
+const MarketingPopup = ({ handlePayment, isPaid = false, customerEmail = null, showMarketingPopup = false }: MarketingPopupProps) => {
     const [showPopup, setShowPopup] = useState(false);
     const [showMinimized, setShowMinimized] = useState(false);
     const [displayTime, setDisplayTime] = useState('10:00.000');
@@ -72,31 +73,27 @@ const MarketingPopup = ({ handlePayment, isPaid = false, customerEmail = null }:
     };
 
     useEffect(() => {
-        if (!isPaid) {
-            const timer = setTimeout(() => {
-                setShowPopup(true);
-                startCountdown();
+        if (!isPaid && showMarketingPopup) {
+            setShowPopup(true);
+            startCountdown();
 
-                (async () => {
-                    const date = new Date();
-                    const options = { timeZone: 'Asia/Shanghai', hour12: false };
-                    const formattedDate = date.toLocaleString('zh-CN', options);
+            (async () => {
+                const date = new Date();
+                const options = { timeZone: 'Asia/Shanghai', hour12: false };
+                const formattedDate = date.toLocaleString('zh-CN', options);
 
-                    const { ip, locationInfo } = await getLocationInfo();
+                const { ip, locationInfo } = await getLocationInfo();
 
-                    console.log('Marketing Popup Email:', customerEmail);
+                console.log('Marketing Popup Email:', customerEmail);
 
-                    const emailInfo = customerEmail ? `Email: ${customerEmail}, ` : '';
+                const emailInfo = customerEmail ? `Email: ${customerEmail}, ` : '';
 
-                    sendFeishuNotification(
-                        `[${process.env.NEXT_PUBLIC_ENV_HINT}] ${emailInfo}IP: ${ip} ${locationInfo}, 用户看到营销弹窗 at ${formattedDate}`
-                    );
-                })();
-            }, 12000);
-
-            return () => clearTimeout(timer);
+                sendFeishuNotification(
+                    `[${process.env.NEXT_PUBLIC_ENV_HINT}] ${emailInfo}IP: ${ip} ${locationInfo}, 用户看到营销弹窗 at ${formattedDate}`
+                );
+            })();
         }
-    }, [isPaid, customerEmail]);
+    }, [isPaid, showMarketingPopup, customerEmail]);
 
     const startCountdown = () => {
         const startTime = performance.now();

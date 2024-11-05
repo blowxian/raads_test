@@ -1087,10 +1087,15 @@ Format the response in clear sections with headers.`;
             // 滚动到购买区域
             (purchaseRef.current as any)?.scrollIntoView({ behavior: 'smooth' });
 
-            // 记录事件
+            // Start marketing popup timer
+            setTimeout(() => {
+                setShowMarketingPopup(true);
+            }, 12000); // Show popup after 12 seconds
+
+            // Record event
             logEvent('click', 'RAADSRReport', 'unlock_full_report', totalScore);
 
-            // 发送飞书通知（异步，不阻塞）
+            // Send Feishu notification
             const message = `[${process.env.NEXT_PUBLIC_ENV_HINT}] User ${customerEmail || 'Unknown'} clicked unlock full report button (Score: ${totalScore})`;
             notifyFeishu(message).catch(error => {
                 console.error('Failed to send Feishu notification:', error);
@@ -1156,6 +1161,8 @@ Format the response in clear sections with headers.`;
             reportElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     }, [notificationType, aiReport.content]);
+
+    const [showMarketingPopup, setShowMarketingPopup] = useState(false);
 
     return (
         <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
@@ -1439,6 +1446,7 @@ Format the response in clear sections with headers.`;
                 handlePayment={handlePayment}
                 isPaid={isPaid}
                 customerEmail={customerEmail}
+                showMarketingPopup={showMarketingPopup}
             />
         </div>
     );

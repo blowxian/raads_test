@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useReactToPrint } from 'react-to-print';
 import {
@@ -33,10 +33,11 @@ import Cookies from "js-cookie";
 import dynamic from "next/dynamic";
 import ReactMarkdown from 'react-markdown';
 
-const ScoreCharts = dynamic(() => import('@/components/ScoreCharts'), {
+// 将 ScoreCharts 组件用 React.memo 包装
+const MemoizedScoreCharts = React.memo(dynamic(() => import('@/components/ScoreCharts'), {
     ssr: false,
     loading: () => <p>Loading charts...</p>
-});
+}));
 
 const FEISHU_NOTIFY_WEBHOOK_URL = 'https://open.feishu.cn/open-apis/bot/v2/hook/f4c87354-47b7-4ad1-83ff-a56962dc83a1';
 
@@ -346,7 +347,7 @@ const ebooks = [
     },
 ];
 
-// 添加新的状态和类型定义
+// 添加新的态和类型定义
 interface AnswerData {
     i: number; // id
     a: number; // answerIndex
@@ -358,6 +359,63 @@ interface AIReport {
     error: string | null;
     isTyping: boolean; // 添加打字动画状态
 }
+
+// 将 NotificationBar 移出主组件，避免不必要的重渲染
+const NotificationBar = React.memo(({
+    showNotification,
+    notificationType,
+    onHandleClick
+}: {
+    showNotification: boolean;
+    notificationType: 'generating' | 'complete' | null;
+    onHandleClick: () => void;
+}) => {
+    if (!showNotification) return null;
+
+    const getNotificationStyle = () => {
+        switch (notificationType) {
+            case 'generating':
+                return 'bg-blue-500';
+            case 'complete':
+                return 'bg-green-500';
+            default:
+                return 'bg-gray-500';
+        }
+    };
+
+    const getMessage = () => {
+        switch (notificationType) {
+            case 'generating':
+                return 'Generating your personalized Analysis...';
+            case 'complete':
+                return 'Analysis complete! Click here to view your report';
+            default:
+                return '';
+        }
+    };
+
+    return (
+        <div
+            className={`fixed top-0 left-0 right-0 ${getNotificationStyle()} text-white transition-all duration-300 z-50`}
+            style={{
+                transform: showNotification ? 'translateY(0)' : 'translateY(-100%)',
+                opacity: showNotification ? 1 : 0
+            }}
+        >
+            <div
+                className="p-4 text-center cursor-pointer flex items-center justify-center"
+                onClick={onHandleClick}
+            >
+                {notificationType === 'generating' && (
+                    <div className="mr-2 w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                )}
+                <span className="text-sm md:text-base">{getMessage()}</span>
+            </div>
+        </div>
+    );
+});
+
+NotificationBar.displayName = 'NotificationBar';
 
 export default function RAADSRReport() {
     const searchParams = useSearchParams();
@@ -640,7 +698,7 @@ export default function RAADSRReport() {
             const newWindow = window.open(twitterUrl, '_blank');
             if (newWindow) {
                 newWindow.opener = null;
-                // 记录成功的分享事件
+                // 记录成功的分享件
                 logEvent('share', 'RAADSRReport', 'share_twitter_success', totalScore);
             } else {
                 setShareError('Popup blocked. Please allow popups for this site.');
@@ -697,10 +755,13 @@ export default function RAADSRReport() {
         }
     };
 
-    // 修改 handleGenerateReport 函数中的 localStorage 相关代码
+    // Add new state for notification
+    const [showNotification, setShowNotification] = useState(false);
+    const [notificationType, setNotificationType] = useState<'generating' | 'complete' | null>(null);
+
+    // Modify handleGenerateReport function
     const handleGenerateReport = async () => {
         if (isBrowser()) {
-            // 首先检查 localStorage 中是否已有报告
             const storedReport = localStorage.getItem(`aiReport_${totalScore}`);
             if (storedReport) {
                 setAIReport({
@@ -709,9 +770,17 @@ export default function RAADSRReport() {
                     error: null,
                     isTyping: false
                 });
+                // Show completion notification
+                setNotificationType('complete');
+                setShowNotification(true);
+                setTimeout(() => setShowNotification(false), 3000);
                 return;
             }
         }
+
+        // Show generating notification
+        setNotificationType('generating');
+        setShowNotification(true);
 
         setAIReport({
             content: '',
@@ -770,6 +839,10 @@ export default function RAADSRReport() {
                     }
                 });
             }
+
+            // When generation is complete
+            setNotificationType('complete');
+            setTimeout(() => setShowNotification(false), 3000);
         } catch (error) {
             console.error('Error generating report:', error);
             setAIReport(prev => ({
@@ -778,6 +851,7 @@ export default function RAADSRReport() {
                 loading: false,
                 isTyping: false
             }));
+            setShowNotification(false);
         }
     };
 
@@ -860,20 +934,16 @@ Format the response in clear sections with headers.`;
         ),
     };
 
-    // 修改 handleSSE 函数
-    const handleSSE = (response: string) => {
+    // 修改 handleSSE 函数，避免不必要的状态更新
+    const handleSSE = useCallback((response: string) => {
         try {
             const data = JSON.parse(response);
             if (data.content) {
-                setAIReport(prev => {
-                    // 确保新内容被追加到现有内容后面
-                    const newContent = prev.content + data.content;
-                    return {
-                        ...prev,
-                        content: newContent,
-                        isTyping: true
-                    };
-                });
+                setAIReport(prev => ({
+                    ...prev,
+                    content: prev.content + data.content,
+                    isTyping: true
+                }));
             } else if (data.error) {
                 setAIReport(prev => ({
                     ...prev,
@@ -885,7 +955,7 @@ Format the response in clear sections with headers.`;
         } catch (error) {
             console.error('Error parsing SSE response:', error);
         }
-    };
+    }, []);
 
     // 修改自动生成报告的 useEffect
     useEffect(() => {
@@ -904,9 +974,35 @@ Format the response in clear sections with headers.`;
                 </h2>
                 <div className="mb-2 overflow-hidden">
                     {aiReport.loading && !aiReport.content ? (
-                        <div className="flex flex-col items-center justify-center p-4">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mb-4"></div>
-                            <p className="text-gray-600">Generating comprehensive analysis...</p>
+                        <div className="flex flex-col items-center justify-center p-8 bg-gray-50 rounded-lg">
+                            <div className="flex items-center justify-center space-x-2 mb-4">
+                                {[0, 1, 2].map((index) => (
+                                    <div
+                                        key={index}
+                                        className="w-3 h-3 bg-blue-500 rounded-full"
+                                        style={{
+                                            animation: 'bounce 1.4s infinite ease-in-out',
+                                            animationDelay: `${index * 0.16}s`
+                                        }}
+                                    ></div>
+                                ))}
+                            </div>
+                            <p className="text-gray-600 font-medium mb-2">Analyzing your responses...</p>
+                            <p className="text-sm text-gray-500">This may take a few moments</p>
+                            <div className="mt-4 flex flex-wrap justify-center gap-2">
+                                {['Processing data', 'Generating insights', 'Creating recommendations'].map((text, index) => (
+                                    <div
+                                        key={text}
+                                        className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs"
+                                        style={{
+                                            animation: 'fadeInOut 2s infinite ease-in-out',
+                                            animationDelay: `${index * 0.3}s`
+                                        }}
+                                    >
+                                        {text}
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     ) : aiReport.error ? (
                         <div className="text-red-500 p-4 flex items-center">
@@ -1046,9 +1142,28 @@ Format the response in clear sections with headers.`;
         loading: () => <div className="min-h-[300px] flex items-center justify-center">Loading charts...</div>
     });
 
-    // 4. 返回组件JSX，确保服务端和客户端渲染一致
+    // 使用 useMemo 缓存分数数据
+    const memoizedScores = useMemo(() => ({
+        socialRelatedness: scores.socialRelatedness,
+        circumscribedInterests: scores.circumscribedInterests,
+        language: scores.language,
+        sensoryMotor: scores.sensoryMotor
+    }), [scores.socialRelatedness, scores.circumscribedInterests, scores.language, scores.sensoryMotor]);
+
+    const handleNotificationClick = useCallback(() => {
+        if (notificationType === 'complete' && aiReport.content) {
+            const reportElement = document.querySelector('.markdown-content');
+            reportElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }, [notificationType, aiReport.content]);
+
     return (
         <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+            <NotificationBar
+                showNotification={showNotification}
+                notificationType={notificationType}
+                onHandleClick={handleNotificationClick}
+            />
             {!isPaid && <FloatingUnlockButton />}
             <div>
                 <div className="w-full flex flex-wrap md:justify-end button-container"
@@ -1082,7 +1197,7 @@ Format the response in clear sections with headers.`;
                                     <h2 className="text-xl font-bold mb-2">RAADS-R Visualization</h2>
                                     {scores.socialRelatedness !== undefined && (
                                         <div className="min-h-[650px] md:min-h-[300px] w-full">
-                                            <DynamicScoreCharts scores={scores} />
+                                            <MemoizedScoreCharts scores={memoizedScores} />
                                         </div>
                                     )}
                                 </div>
@@ -1344,7 +1459,7 @@ const markdownStyles = `
 }
 
 .markdown-content h3 {
-    @apply text-lg font-semibold text-gray-700 mb-2;
+    @apply text-lg font-semibold text-gray-600 mb-2;
 }
 
 .markdown-content p {
@@ -1384,7 +1499,7 @@ const markdownStyles = `
 }
 
 .markdown-content a {
-    @apply text-blue-600 hover:text-blue-800 underline;
+    @apply text-blue-600 hover:text-blue-800 break-words overflow-hidden overflow-ellipsis;
 }
 
 .markdown-content table {
@@ -1507,27 +1622,6 @@ const additionalStyles = `
     }
 }
 
-.markdown-content h1,
-.markdown-content h2,
-.markdown-content h3,
-.markdown-content p,
-.markdown-content ul,
-.markdown-content ol,
-.markdown-content blockquote {
-    animation: slideIn 0.3s ease-out;
-}
-
-@keyframes slideIn {
-    from {
-        transform: translateY(10px);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
-
 .markdown-content {
     word-wrap: break-word;
     overflow-wrap: break-word;
@@ -1554,5 +1648,88 @@ const additionalStyles = `
 .markdown-content-wrapper {
     max-width: 100%;
     overflow-x: hidden;
+}
+
+@keyframes spin-slow {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.animate-spin-slow {
+    animation: spin-slow 2s linear infinite;
+}
+
+.delay-100 {
+    animation-delay: 100ms;
+}
+
+.delay-200 {
+    animation-delay: 200ms;
+}
+
+.animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: .5;
+    }
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* 确保动画样式被正确应用 */
+.loading-spinner {
+    animation: spin 2s linear infinite;
+}
+
+.loading-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes bounce {
+    0%, 80%, 100% { 
+        transform: scale(0);
+        opacity: 0.3;
+    }
+    40% { 
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeInOut {
+    0%, 100% { 
+        opacity: 0.4;
+        transform: translateY(0);
+    }
+    50% { 
+        opacity: 1;
+        transform: translateY(-2px);
+    }
+}
+
+.loading-dot {
+    animation: bounce 1.4s infinite ease-in-out both;
+}
+
+.loading-label {
+    animation: fadeInOut 2s infinite ease-in-out both;
 }
 `;

@@ -14,7 +14,16 @@ import {
     YAxis
 } from 'recharts';
 
-const ScoreCharts = ({ scores }: any) => {
+interface ScoreChartsProps {
+    scores: {
+        socialRelatedness: number;
+        circumscribedInterests: number;
+        language: number;
+        sensoryMotor: number;
+    };
+}
+
+const ScoreCharts: React.FC<ScoreChartsProps> = React.memo(({ scores }) => {
     const chartData = [
         { name: 'Social', fullName: 'Social Relatedness', score: scores.socialRelatedness },
         { name: 'Interests', fullName: 'Circumscribed Interests', score: scores.circumscribedInterests },
@@ -71,6 +80,16 @@ const ScoreCharts = ({ scores }: any) => {
             </div>
         </div>
     );
+});
+
+// 添加比较函数以确保只在分数真正改变时才重新渲染
+const areEqual = (prevProps: ScoreChartsProps, nextProps: ScoreChartsProps) => {
+    return (
+        prevProps.scores.socialRelatedness === nextProps.scores.socialRelatedness &&
+        prevProps.scores.circumscribedInterests === nextProps.scores.circumscribedInterests &&
+        prevProps.scores.language === nextProps.scores.language &&
+        prevProps.scores.sensoryMotor === nextProps.scores.sensoryMotor
+    );
 };
 
-export default ScoreCharts;
+export default React.memo(ScoreCharts, areEqual);

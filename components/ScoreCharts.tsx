@@ -92,4 +92,6 @@ const areEqual = (prevProps: ScoreChartsProps, nextProps: ScoreChartsProps) => {
     );
 };
 
+ScoreCharts.displayName = 'ScoreCharts';
+
 export default React.memo(ScoreCharts, areEqual);

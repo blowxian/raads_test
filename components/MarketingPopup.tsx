@@ -57,7 +57,7 @@ const MarketingPopup = ({ handlePayment, isPaid = false, customerEmail = null, s
         name: "premium",
         title: "Premium",
         originalPrice: 99.99,
-        price: 19.99,
+        price: 20,
         features: [
             {
                 text: `Comprehensive Report: <strong>In-Depth Analysis & Personalized Insights</strong>`,

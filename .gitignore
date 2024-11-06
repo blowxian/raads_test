@@ -40,3 +40,6 @@ next-env.d.ts
 
 # google
 google_application_credentials.json
+
+# script
+script/

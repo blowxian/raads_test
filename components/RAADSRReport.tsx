@@ -1103,7 +1103,7 @@ Format the response in clear sections with headers.`;
             // Start marketing popup timer
             setTimeout(() => {
                 setShowMarketingPopup(true);
-            }, 12000);
+            }, 8000);
 
             // Record event
             logEvent('click', 'RAADSRReport', 'unlock_full_report', totalScore);

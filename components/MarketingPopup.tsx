@@ -60,13 +60,13 @@ const MarketingPopup = ({ handlePayment, isPaid = false, customerEmail = null, s
         price: 19,
         features: [
             {
-                text: `Comprehensive Report: <strong>In-Depth Analysis & Personalized Insights</strong>`,
+                text: `<strong>Black Friday Exclusive:</strong> Complete RAADS-R Analysis with Expert Insights`,
                 anchorName: 'report'
             }, {
-                text: "<strong>Bonus:</strong> 3 Expert-Curated eBooks",
+                text: "<strong>Limited Time Bonus:</strong> 3 Premium Mental Health eBooks ($97 Value)",
                 anchorName: 'ebookDetail'
             }, {
-                text: "<strong>Exclusive Offer:</strong> One-Year AI Mental Health Assistant Access",
+                text: "<strong>Special Black Friday Gift:</strong> 12-Month AI Mental Health Assistant Access",
                 anchorName: 'aiDetail'
             }
         ],
@@ -217,13 +217,13 @@ const MarketingPopup = ({ handlePayment, isPaid = false, customerEmail = null, s
                     onClick={() => setShowPopup(true)}>
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="font-bold text-sm">Premium Offer</p>
-                            <p className="text-xs">Save ${discountAmount}</p>
+                            <p className="font-bold text-sm">Black Friday Deal 🔥</p>
+                            <p className="text-xs">Save {Math.round((discountAmount / premiumPlan.originalPrice) * 100)}% Today!</p>
                         </div>
                         <ChevronDown size={20} className="ml-2" />
                     </div>
                     <p className="text-xs mt-1">
-                        Ends in: <span className="font-mono">{displayTime}</span>
+                        ⚡ Flash Sale: <span className="font-mono">{displayTime}</span>
                     </p>
                 </div>
             )}

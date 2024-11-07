@@ -562,58 +562,91 @@ export default function RAADSRReport() {
             setTotalScore(parseInt(totalScoreFromCookie, 10));
         }
 
-        const paymentStatus = searchParams.get('status');
-        if (paymentStatus === 'success') {
-            // verify payment status
+        // 统一处理支付验证
+        const verifyPayment = async () => {
             const sessionId = searchParams?.get('session_id');
-            if (sessionId) {
-                fetch(`/api/checkout/verify?session_id=${sessionId}`)
-                    .then(res => res.json())
-                    .then(data => {
-                        console.log(data);
-                        setIsPaid(true);
-                        setSelectedTier(data.metadata?.plan);
-                        setCustomerEmail(data.session?.customer_email || data.session?.customer_details?.email);
+            const paymentStatus = searchParams.get('status');
 
-                        // 添加空值检查
-                        const invoiceNum = data.invoice?.number;
-                        setInvoiceNumber(invoiceNum || null);
+            // 添加 session id 格式校验
+            const isValidSessionId = sessionId && /^cs_.*$/.test(sessionId);
 
-                        // 获取当前时间并转换为东八区时间格式
-                        const date = new Date();
-                        const options = { timeZone: 'Asia/Shanghai', hour12: false };
-                        const formattedDate = date.toLocaleString('zh-CN', options);
-
-                        // 添加空值检查
-                        const email = data.session?.customer_email || data.session?.customer_details?.email || 'Unknown';
-                        const plan = data.metadata?.plan || 'Unknown';
-                        const invoice = invoiceNum || 'No invoice number';
-
-                        notifyFeishu(`[${process.env.NEXT_PUBLIC_ENV_HINT}] ${email} 购买了 ${plan}, 回执编号 ${invoice}, 在 ${formattedDate} 访问了购买成功页面`);
-
-                        // 记录支付成功事件
-                        logEvent('purchase', 'RAADSRReport', 'payment_success', data.metadata?.score);
-                    })
-                    .catch(error => {
-                        console.error("Failed to verify payment:", error);
-                        // 添加错误处理
-                        setIsPaid(false);
-                    });
+            if (!isValidSessionId) {
+                console.warn('Invalid session ID format');
+                setIsPaid(false);
+                return;
             }
-        } else if (paymentStatus === 'cancel') {
-            console.log("Payment cancelled.");
-            setPaymentCancelled(true);
-            setShowFlash(true);
-            setTimeout(() => {
-                setPaymentCancelled(false);
-            }, 3000); // 3秒后隐藏通知栏
-            setTimeout(() => {
-                setShowFlash(false);
-            }, 6000); // 6秒后停止边框闪烁
 
-            // 记录支付取消事件
-            logEvent('purchase', 'RAADSRReport', 'payment_cancel', totalScore);
-        }
+            if (sessionId && paymentStatus === 'success') {
+                try {
+                    const response = await fetch(`/api/checkout/verify?session_id=${sessionId}`);
+
+                    // 检查响应状态
+                    if (!response.ok) {
+                        throw new Error('Payment verification failed');
+                    }
+
+                    const data = await response.json();
+
+                    // 验证支付会话状态
+                    if (data.session?.payment_status !== 'paid') {
+                        console.warn('Payment not completed');
+                        setIsPaid(false);
+                        return;
+                    }
+
+                    // 验证支付金额
+                    const expectedAmount = data.metadata?.plan === 'premium' ? 3900 : 1600; // 金额以分为单位
+                    if (data.session?.amount_total !== expectedAmount) {
+                        console.warn('Payment amount mismatch');
+                        setIsPaid(false);
+                        return;
+                    }
+
+                    console.log('Payment verified successfully:', data);
+                    setIsPaid(true);
+                    setSelectedTier(data.metadata?.plan);
+                    setCustomerEmail(data.session?.customer_email || data.session?.customer_details?.email);
+
+                    const invoiceNum = data.invoice?.number;
+                    setInvoiceNumber(invoiceNum || null);
+
+                    // 获取当前时间并转换为东八区时间格式
+                    const date = new Date();
+                    const options = { timeZone: 'Asia/Shanghai', hour12: false };
+                    const formattedDate = date.toLocaleString('zh-CN', options);
+
+                    const email = data.session?.customer_email || data.session?.customer_details?.email || 'Unknown';
+                    const plan = data.metadata?.plan || 'Unknown';
+                    const invoice = invoiceNum || 'No invoice number';
+
+                    notifyFeishu(`[${process.env.NEXT_PUBLIC_ENV_HINT}] ${email} 购买了 ${plan}, 回执编号 ${invoice}, 在 ${formattedDate} 访问了购买成功页面`);
+
+                    // 记录支付成功事件
+                    logEvent('purchase', 'RAADSRReport', 'payment_success', data.metadata?.score);
+
+                    // 添加 Google Tag 转化事件
+                    if (typeof window !== 'undefined' && (window as any).gtag) {
+                        (window as any).gtag('event', 'conversion_event_purchase_1', {
+                            'value': data.metadata?.plan === 'premium' ? 39 : 16,
+                            'currency': 'USD',
+                            'transaction_id': invoice,
+                            'plan_type': plan
+                        });
+                    }
+                } catch (error) {
+                    console.error("Failed to verify payment:", error);
+                    setIsPaid(false);
+
+                    // 记录验证失败事件
+                    logEvent('error', 'RAADSRReport', 'payment_verification_failed', totalScore);
+
+                    // 通知飞书
+                    notifyFeishu(`[${process.env.NEXT_PUBLIC_ENV_HINT}] Payment verification failed for session ${sessionId}`).catch(console.error);
+                }
+            }
+        };
+
+        verifyPayment();
 
         // 修改 IP 获取和位置查询逻辑
         const getLocationInfo = async () => {
@@ -1081,7 +1114,7 @@ Format the response in clear sections with headers.`;
         }
     }, [isPaid]);
 
-    // 添加固定定位的解锁按钮
+    // 添加固定位的解锁按钮
     const FloatingUnlockButton = () => {
         const handleUnlockClick = () => {
             // Check if report is generating

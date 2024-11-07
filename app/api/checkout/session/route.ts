@@ -81,9 +81,9 @@ export async function POST(req: NextRequest) {
         let appliedCoupon = couponCode;
         if (!appliedCoupon) {
             if (plan === 'basic') {
-                appliedCoupon = 'UV1QerRE';
+                appliedCoupon = 'GNqG97mS';
             } else if (plan === 'premium') {
-                appliedCoupon = '01louUWo';
+                appliedCoupon = 'nrl9JArq';
             }
         }
 

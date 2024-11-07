@@ -57,7 +57,7 @@ const MarketingPopup = ({ handlePayment, isPaid = false, customerEmail = null, s
         name: "premium",
         title: "Premium",
         originalPrice: 99.99,
-        price: 12,
+        price: 19,
         features: [
             {
                 text: `Comprehensive Report: <strong>In-Depth Analysis & Personalized Insights</strong>`,
@@ -171,16 +171,17 @@ const MarketingPopup = ({ handlePayment, isPaid = false, customerEmail = null, s
                             <X size={20} className="sm:w-6 sm:h-6" />
                         </button>
                         <div className="text-center pt-4">
-                            <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-3 sm:mb-4 font-sans">Limited Time Offer!</h2>
+                            <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-3 sm:mb-4 font-sans">
+                                Black Friday Mega Deal! 🔥
+                            </h2>
                             <div className="bg-yellow-300 text-red-800 font-bold py-1.5 sm:py-2 px-3 sm:px-4 rounded-full inline-block mb-3 sm:mb-4 transform -rotate-2 shadow-md">
-                                <DollarSign className="inline-block mr-1" size={16} />
-                                <span className="text-xl sm:text-2xl">{discountAmount} OFF</span>
+                                <span className="text-xl sm:text-2xl">SAVE {Math.round((discountAmount / premiumPlan.originalPrice) * 100)}%</span>
                             </div>
                             <p className="text-base sm:text-lg mb-4 sm:mb-6 font-sans text-white">
-                                Transform your understanding with our {premiumPlan.title} RAADS-R report!
+                                Unlock Your Complete RAADS-R Analysis at Our Lowest Price Ever!
                             </p>
                             <div className="bg-white rounded-lg p-3 sm:p-4 mb-4 sm:mb-6 text-left">
-                                <h3 className="text-red-600 font-bold mb-2 text-sm sm:text-base">Premium Package Includes:</h3>
+                                <h3 className="text-red-600 font-bold mb-2 text-sm sm:text-base">Black Friday Bundle Includes:</h3>
                                 <ul className="space-y-2">
                                     {premiumPlan.features.map((feature, index) => (
                                         <li key={index} className="flex items-start text-sm sm:text-base">
@@ -195,15 +196,16 @@ const MarketingPopup = ({ handlePayment, isPaid = false, customerEmail = null, s
                                     <span className="line-through">${premiumPlan.originalPrice}</span>
                                     <span className="ml-2 text-white text-2xl sm:text-3xl">${premiumPlan.price}</span>
                                 </p>
+                                <p className="text-yellow-200 text-sm">Best Value of the Year!</p>
                             </div>
                             <button
-                                onClick={() => handlePaymentWithNotification('premium', "krrzXOtV")}
+                                onClick={() => handlePaymentWithNotification('premium', "01louUWo")}
                                 className="bg-white text-red-600 font-bold py-2.5 sm:py-3 px-5 sm:px-6 rounded-full hover:bg-red-100 transition duration-300 shadow-lg text-base sm:text-lg w-full sm:w-auto"
                             >
-                                Click to Pay Now
+                                Claim Your Black Friday Discount Now
                             </button>
                             <p className="mt-3 sm:mt-4 text-xs sm:text-sm text-yellow-200 font-semibold">
-                                Hurry! Offer expires in: <span className="font-mono">{displayTime}</span>
+                                ⚡ Flash Sale Ends In: <span className="font-mono">{displayTime}</span>
                             </p>
                         </div>
                     </div>

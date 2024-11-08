@@ -13,15 +13,6 @@ if [ "$current_branch" != "main" ]; then
     exit 1
 fi
 
-# 更新代码库
-echo "正在更新代码库..."
-if git pull; then
-    echo "代码库更新成功。"
-else
-    echo "代码库更新失败！"
-    exit 1
-fi
-
 # 构建并推送Docker镜像
 echo "正在构建并推送Docker镜像..."
 if docker buildx build --platform linux/amd64 --build-arg NODE_ENV=production -t blowxian/raads_test:latest --push .; then     # 需要替换为你的镜像名称

@@ -32,6 +32,7 @@ import MarketingPopup from "@/components/MarketingPopup";
 import Cookies from "js-cookie";
 import dynamic from "next/dynamic";
 import ReactMarkdown from 'react-markdown';
+import SurveyPopup from "@/components/SurveyPopup";
 
 // 将 ScoreCharts 组件用 React.memo 包装
 const MemoizedScoreCharts = React.memo(dynamic(() => import('@/components/ScoreCharts'), {
@@ -1133,19 +1134,17 @@ Format the response in clear sections with headers.`;
             // Original behavior for non-generating state
             (purchaseRef.current as any)?.scrollIntoView({ behavior: 'smooth' });
 
-            // Start marketing popup timer
+            // Show survey popup instead of marketing popup
             setTimeout(() => {
-                setShowMarketingPopup(true);
-            }, 8000);
+                setShowSurveyPopup(true);
+            }, 1000);
 
             // Record event
             logEvent('click', 'RAADSRReport', 'unlock_full_report', totalScore);
 
             // Send Feishu notification
             const message = `[${process.env.NEXT_PUBLIC_ENV_HINT}] User ${customerEmail || 'Unknown'} clicked unlock full report button (Score: ${totalScore})`;
-            notifyFeishu(message).catch(error => {
-                console.error('Failed to send Feishu notification:', error);
-            });
+            notifyFeishu(message).catch(console.error);
         };
 
         return (
@@ -1208,7 +1207,7 @@ Format the response in clear sections with headers.`;
         }
     }, [notificationType, aiReport.content]);
 
-    const [showMarketingPopup, setShowMarketingPopup] = useState(false);
+    const [showSurveyPopup, setShowSurveyPopup] = useState(false);
 
     return (
         <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
@@ -1488,11 +1487,11 @@ Format the response in clear sections with headers.`;
                             wd.gstar@gmail.com</em></div>
                 )}
             </div>
-            <MarketingPopup
+            <SurveyPopup
                 handlePayment={handlePayment}
                 isPaid={isPaid}
                 customerEmail={customerEmail}
-                showMarketingPopup={showMarketingPopup}
+                showSurveyPopup={showSurveyPopup}
             />
         </div>
     );
